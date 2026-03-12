@@ -8,8 +8,7 @@ public class Trip {
     private final double price;
     private int availableSeats;
 
-    public Trip(int id, String touristAttraction, String transportCompany,
-                String departureTime, double price, int availableSeats) {
+    public Trip(int id, String touristAttraction, String transportCompany, String departureTime, double price, int availableSeats) {
         this.id = id;
         this.touristAttraction = touristAttraction;
         this.transportCompany = transportCompany;

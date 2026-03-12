@@ -30,7 +30,7 @@ public class Reservation {
                 ", customer='" + customerName + '\'' +
                 ", phone='" + customerPhone + '\'' +
                 ", tickets=" + numberOfTickets +
-                ", trip=" + trip.getID() +
+                ", trip=" + trip.getId() +
                 ", agency=" + agency.getId() + '}';
     }
 }
