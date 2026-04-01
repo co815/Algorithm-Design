@@ -128,11 +128,6 @@ public class ReservationDbRepository implements IReservationRepository {
         return logger.traceExit(reservations);
     }
 
-
-    /**
-     * Returns the base SELECT … FROM reservations JOIN trips JOIN agencies statement,
-     * with column aliases to avoid name collisions between the three tables.
-     */
     private String buildSelectWithJoins() {
         return  "SELECT " +
                 "  r.id            AS r_id, " +

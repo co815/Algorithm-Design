@@ -89,3 +89,24 @@
 - added src/main/java/repository/ReservationDbRepository.java
     - implements IReservationRepository using JDBC and PreparedStatement
     - uses JdbcUtils for connection management; logs operations via Log4j2
+
+01.04.2026
+- Initialized TurismClient project in C# using Avalonia UI:
+  - Configured .gitignore to ignore bin/, obj/, and .idea/ folders.
+  - Structured the project into layers: Models, Repositories, Services, and UI.
+
+- Added C# models (Models folder):
+  - Trip.cs: properties for trips (Id, Tourist Attraction, Transport Company, Departure Time, Price, Available Seats).
+  - Agency.cs: agency data for authentication (Id, Name, Username, Password).
+  - Reservation.cs: reservation details with references to Trip and Agency objects.
+
+- Added interfaces and in-memory repositories (Repositories folder):
+  - ITripRepository, IAgencyRepository, IReservationRepository: defined core CRUD operations. 
+  - TripInMemoryRepository, AgencyInMemoryRepository, ReservationInMemoryRepository: implementations using internal lists (List<T>) populated with dummy data for testing purposes.
+
+- Added business logic (Services folder):
+  - TurismService.cs: a Facade-type class managing authentication, trip searching, and the reservation process (seat verification, inventory deduction, and saving).
+
+- Implemented Graphical User Interface (UI):
+  - MainWindow.axaml: main window design using XAML and Data Binding to display the list of trips. 
+  - MainWindow.axaml.cs: the window controller interacting with TurismService for loading and preparing data for display.

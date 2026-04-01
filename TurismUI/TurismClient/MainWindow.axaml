@@ -1,0 +1,26 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:TurismClient.Models" 
+        x:Class="TurismClient.MainWindow"
+        Title="Aplicație Turism" Width="800" Height="500">
+    
+    <StackPanel Margin="20" Spacing="15">
+        
+        <TextBlock Text="Excursii Disponibile" FontSize="24" FontWeight="Bold"/>
+        
+        <ListBox x:Name="TripsListBox" Height="350">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="models:Trip">
+                    <StackPanel Orientation="Horizontal" Spacing="20">
+                        <TextBlock Text="{Binding TouristAttraction}" FontWeight="Bold" Width="120"/>
+                        <TextBlock Text="{Binding TransportCompany}" Width="120"/>
+                        <TextBlock Text="{Binding DepartureTime}" Width="150"/>
+                        <TextBlock Text="{Binding Price, StringFormat='{}{0} RON'}" Width="80"/>
+                        <TextBlock Text="{Binding AvailableSeats, StringFormat='{}Locuri: {0}'}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        
+    </StackPanel>
+</Window>

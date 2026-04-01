@@ -19,10 +19,6 @@ public class TripDbRepository implements ITripRepository {
         this.dbUtils = dbUtils;
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // save
-    // ──────────────────────────────────────────────────────────────────────────
-
     @Override
     public void save(Trip trip) {
         logger.traceEntry("save({})", trip);
@@ -49,10 +45,6 @@ public class TripDbRepository implements ITripRepository {
 
         logger.traceExit();
     }
-
-    // ──────────────────────────────────────────────────────────────────────────
-    // findById
-    // ──────────────────────────────────────────────────────────────────────────
 
     @Override
     public Trip findById(int id) {
@@ -83,10 +75,6 @@ public class TripDbRepository implements ITripRepository {
         return logger.traceExit((Trip) null);
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // findAll
-    // ──────────────────────────────────────────────────────────────────────────
-
     @Override
     public List<Trip> findAll() {
         logger.traceEntry("findAll()");
@@ -112,15 +100,10 @@ public class TripDbRepository implements ITripRepository {
         return logger.traceExit(trips);
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // findByAttractionAndDepartureInterval
-    // ──────────────────────────────────────────────────────────────────────────
-
     @Override
     public List<Trip> findByAttractionAndDepartureInterval(String attraction, String startTime, String endTime) {
         logger.traceEntry("findByAttractionAndDepartureInterval({}, {}, {})", attraction, startTime, endTime);
 
-        // departure_time is stored as ISO-8601 / sortable string (e.g. "2024-06-01 08:00")
         String sql = "SELECT id, tourist_attraction, transport_company, departure_time, price, available_seats " +
                      "FROM trips " +
                      "WHERE tourist_attraction = ? " +
@@ -152,10 +135,6 @@ public class TripDbRepository implements ITripRepository {
         return logger.traceExit(trips);
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // updateAvailableSeats
-    // ──────────────────────────────────────────────────────────────────────────
-
     @Override
     public void updateAvailableSeats(int tripId, int newAvailableSeats) {
         logger.traceEntry("updateAvailableSeats(tripId={}, newSeats={})", tripId, newAvailableSeats);
@@ -178,10 +157,6 @@ public class TripDbRepository implements ITripRepository {
 
         logger.traceExit();
     }
-
-    // ──────────────────────────────────────────────────────────────────────────
-    // Helper
-    // ──────────────────────────────────────────────────────────────────────────
 
     private Trip extractTrip(ResultSet rs) throws SQLException {
         return new Trip(
