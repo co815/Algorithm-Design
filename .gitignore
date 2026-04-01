@@ -1,0 +1,21 @@
+# Java compiled class files
+*.class
+
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Build output
+out/
+
+# macOS
+.DS_Store
+/.idea/
+Laborator.iml
+src.iml
+target
+
+# C# / .NET ignorate
+TurismUI/bin/
+TurismUI/obj/
+TurismUI/.idea
