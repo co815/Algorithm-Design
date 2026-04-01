@@ -15,7 +15,7 @@ Laborator.iml
 src.iml
 target
 
-# C# / .NET ignorate
-TurismUI/TurismClient/bin/
-TurismUI/TurismClient/obj/
-TurismUI/TurismClient/.idea
+# C# / .NET
+**/bin/
+**/obj/
+TurismUI/TurismClient/.idea/
