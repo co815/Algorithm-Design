@@ -16,6 +16,6 @@ src.iml
 target
 
 # C# / .NET ignorate
-TurismUI/bin/
-TurismUI/obj/
-TurismUI/.idea
+TurismUI/TurismClient/bin/
+TurismUI/TurismClient/obj/
+TurismUI/TurismClient/.idea
