@@ -107,6 +107,32 @@
 - Added business logic (Services folder):
   - TurismService.cs: a Facade-type class managing authentication, trip searching, and the reservation process (seat verification, inventory deduction, and saving).
 
-- Implemented Graphical User Interface (UI):
-  - MainWindow.axaml: main window design using XAML and Data Binding to display the list of trips. 
-  - MainWindow.axaml.cs: the window controller interacting with TurismService for loading and preparing data for display.
+ - Implemented Graphical User Interface (UI):
+   - MainWindow.axaml: main window design using XAML and Data Binding to display the list of trips. 
+   - MainWindow.axaml.cs: the window controller interacting with TurismService for loading and preparing data for display.
+
+23.04.2026
+- Added Protocol Buffers contract:
+  - `src/main/proto/turism.proto` with request/response envelopes and `TripsUpdatedNotification` push event.
+  - Generated Java classes through Maven protobuf plugin and C# classes through `Grpc.Tools`.
+
+- Implemented socket networking on server (Java):
+  - Added `server.ServerMain` startup entry point.
+  - Added threaded TCP server (`TurismSocketServer`) that serves multiple clients simultaneously (one thread per client).
+  - Added per-client request handler (`ClientHandler`) using protobuf delimited messages.
+  - Added notification broadcast to all connected clients when a reservation changes seats.
+  - Added server-side service layer (`service.TurismServerService`) for login, listing/searching trips, and booking with synchronized seat update flow.
+  - Added DB bootstrap (`server.DatabaseBootstrap`) for schema init + seed data.
+
+- Implemented socket networking on client (C#):
+  - Replaced in-memory access path in `TurismService` with `ProtobufSocketClient` (TCP + protobuf).
+  - Added background read loop for server push notifications (`TripsUpdated` event).
+  - Added request/response correlation by `request_id`.
+
+- Updated Avalonia UI for live updates and authentication:
+  - Added `LoginWindow.axaml` and `LoginWindow.axaml.cs` for agency authentication before accessing the main application.
+  - Configured `App.axaml.cs` to set `LoginWindow` as the startup window.
+  - Refactored `MainWindow` constructor to receive the authenticated `TurismService` and `Agency` instance instead of performing a hardcoded login.
+  - MainWindow now connects to server (`TURISM_SERVER_HOST` / `TURISM_SERVER_PORT`, defaults `127.0.0.1:55556`).
+  - Added booking form (customer, phone, tickets) and reserve button.
+  - Added automatic trip list refresh for server notifications.

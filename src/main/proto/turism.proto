@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package turism.protocol;
+
+option java_package = "protocol";
+option java_outer_classname = "TurismProtos";
+option csharp_namespace = "TurismClient.Protocol";
+
+message AgencyDto {
+  int32 id = 1;
+  string name = 2;
+  string username = 3;
+}
+
+message TripDto {
+  int32 id = 1;
+  string tourist_attraction = 2;
+  string transport_company = 3;
+  string departure_time = 4;
+  double price = 5;
+  int32 available_seats = 6;
+}
+
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message GetAllTripsRequest {
+}
+
+message SearchTripsRequest {
+  string attraction = 1;
+  string start_time = 2;
+  string end_time = 3;
+}
+
+message BookTripRequest {
+  int32 trip_id = 1;
+  int32 agency_id = 2;
+  string customer_name = 3;
+  string customer_phone = 4;
+  int32 tickets_count = 5;
+}
+
+message LoginResponse {
+  AgencyDto agency = 1;
+}
+
+message TripsResponse {
+  repeated TripDto trips = 1;
+}
+
+message BookTripResponse {
+}
+
+message ResponseEnvelope {
+  string request_id = 1;
+  bool success = 2;
+  string error_message = 3;
+
+  oneof payload {
+    LoginResponse login_response = 10;
+    TripsResponse trips_response = 11;
+    BookTripResponse book_trip_response = 12;
+  }
+}
+
+message RequestEnvelope {
+  string request_id = 1;
+
+  oneof payload {
+    LoginRequest login_request = 10;
+    GetAllTripsRequest get_all_trips_request = 11;
+    SearchTripsRequest search_trips_request = 12;
+    BookTripRequest book_trip_request = 13;
+  }
+}
+
+message TripsUpdatedNotification {
+}
+
+message ServerEnvelope {
+  oneof payload {
+    ResponseEnvelope response = 1;
+    TripsUpdatedNotification trips_updated_notification = 2;
+  }
+}
