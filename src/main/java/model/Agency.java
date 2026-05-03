@@ -1,10 +1,25 @@
 package model;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "agencies")
 public class Agency {
-    private final int id;
-    private final String name;
-    private final String username;
-    private final String password;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false, unique = true)
+    private String username;
+
+    @Column(nullable = false)
+    private String password;
+
+    protected Agency() {}
 
     public Agency(int id, String name, String username, String password) {
         this.id = id;

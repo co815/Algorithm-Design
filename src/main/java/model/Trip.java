@@ -1,14 +1,34 @@
 package model;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "trips")
 public class Trip {
-    private final int id;
-    private final String touristAttraction;
-    private final String transportCompany;
-    private final String departureTime;
-    private final double price;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    @Column(name = "tourist_attraction", nullable = false)
+    private String touristAttraction;
+
+    @Column(name = "transport_company", nullable = false)
+    private String transportCompany;
+
+    @Column(name = "departure_time", nullable = false)
+    private String departureTime;
+
+    @Column(nullable = false)
+    private double price;
+
+    @Column(name = "available_seats", nullable = false)
     private int availableSeats;
 
-    public Trip(int id, String touristAttraction, String transportCompany, String departureTime, double price, int availableSeats) {
+    protected Trip() {}
+
+    public Trip(int id, String touristAttraction, String transportCompany,
+                String departureTime, double price, int availableSeats) {
         this.id = id;
         this.touristAttraction = touristAttraction;
         this.transportCompany = transportCompany;

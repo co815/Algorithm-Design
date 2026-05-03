@@ -25,6 +25,12 @@ public partial class MainWindow : Window
         _service = service;
         _currentAgency = currentAgency;
 
+        var userInfoText = this.FindControl<TextBlock>("UserInfoText");
+        if (userInfoText != null)
+        {
+            userInfoText.Text = $"Autentificat ca: {_currentAgency.Name}";
+        }
+
         _service.TripsUpdated += OnTripsUpdated;
 
         LoadTrips();
@@ -84,6 +90,19 @@ public partial class MainWindow : Window
         {
             SetStatus(ex.Message);
         }
+    }
+
+    private void LogoutButton_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        var loginWindow = new LoginWindow();
+        
+        if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            desktop.MainWindow = loginWindow;
+        }
+
+        loginWindow.Show();
+        this.Close();
     }
 
     private void SetStatus(string message)

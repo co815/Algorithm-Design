@@ -6,6 +6,11 @@
     
     <StackPanel Margin="20" Spacing="15">
         
+        <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+            <TextBlock x:Name="UserInfoText" Grid.Column="0" VerticalAlignment="Center" FontSize="16"/>
+            <Button Grid.Column="1" Content="Deconectare" Click="LogoutButton_OnClick" Padding="15,5"/>
+        </Grid>
+
         <TextBlock Text="Excursii Disponibile" FontSize="24" FontWeight="Bold"/>
         
         <ListBox x:Name="TripsListBox" Height="360" SelectionMode="Single">

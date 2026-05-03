@@ -21,3 +21,8 @@ logs
 **/bin/
 **/obj/
 TurismUI/TurismClient/.idea/
+.graphifyignore
+*.md
+!README.md
+graphify-out
+docs.worktrees

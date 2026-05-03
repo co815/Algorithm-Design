@@ -1,14 +1,36 @@
 package model;
 
-public class Reservation {
-    private final int id;
-    private final String customerName;
-    private final String customerPhone;
-    private final int numberOfTickets;
-    private final Trip trip;
-    private final Agency agency;
+import jakarta.persistence.*;
 
-    public Reservation(int id, String customerName, String customerPhone, int numberOfTickets, Trip trip, Agency agency) {
+@Entity
+@Table(name = "reservations")
+public class Reservation {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    @Column(name = "customer_name", nullable = false)
+    private String customerName;
+
+    @Column(name = "customer_phone", nullable = false)
+    private String customerPhone;
+
+    @Column(name = "number_of_tickets", nullable = false)
+    private int numberOfTickets;
+
+    @ManyToOne
+    @JoinColumn(name = "trip_id", nullable = false)
+    private Trip trip;
+
+    @ManyToOne
+    @JoinColumn(name = "agency_id", nullable = false)
+    private Agency agency;
+
+    protected Reservation() {}
+
+    public Reservation(int id, String customerName, String customerPhone,
+                       int numberOfTickets, Trip trip, Agency agency) {
         this.id = id;
         this.customerName = customerName;
         this.customerPhone = customerPhone;

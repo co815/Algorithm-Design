@@ -136,3 +136,18 @@
   - MainWindow now connects to server (`TURISM_SERVER_HOST` / `TURISM_SERVER_PORT`, defaults `127.0.0.1:55556`).
   - Added booking form (customer, phone, tickets) and reserve button.
   - Added automatic trip list refresh for server notifications.
+
+03.05.2026
+- Migrated Java backend persistence layer to Hibernate ORM:
+  - Deleted `src/main/resources/db.properties` and `src/main/java/utils/JdbcUtils.java` in favor of `hibernate.cfg.xml` and `HibernateUtil`.
+  - Deleted JDBC repository implementations: `AgencyDbRepository.java`, `TripDbRepository.java`, and `ReservationDbRepository.java`.
+  - Replaced the deleted JDBC repositories with Hibernate equivalents (`AgencyHibernateRepository`, `TripHibernateRepository`, `ReservationHibernateRepository`).
+  - Deleted `src/main/java/Main.java` as the entry point is now exclusively `ServerMain.java`.
+  - Added `@Entity`, `@Table`, `@Id`, `@GeneratedValue`, `@Column`, and `@ManyToOne` annotations to Java models (`Agency`, `Trip`, `Reservation`).
+  - Added JUnit 5 tests for the new Hibernate repositories (`AgencyHibernateRepositoryTest`, `TripHibernateRepositoryTest`, `ReservationHibernateRepositoryTest`) using a separate in-memory database (`hibernate-test.cfg.xml` configuration).
+  - Updated `DatabaseBootstrap` and `ServerMain` to initialize Hibernate `SessionFactory` on application startup.
+
+- Updated Avalonia UI with Logout feature and User Information display:
+  - Modified `MainWindow.axaml` to include a top bar displaying the currently logged-in agency's name and a "Deconectare" (Logout) button.
+  - Updated `MainWindow.axaml.cs` to set the agency name on initialization and handle the logout action.
+  - The logout action creates a new `LoginWindow`, sets it as the application's main window, shows it, and closes the current `MainWindow`, which properly disposes the server connection.
