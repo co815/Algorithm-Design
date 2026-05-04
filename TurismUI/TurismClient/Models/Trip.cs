@@ -1,26 +1,31 @@
 namespace TurismClient.Models;
 
-public class Trip
+public sealed class Trip
 {
-    public int Id { get; }
+    public int    Id                { get; }
     public string TouristAttraction { get; }
-    public string TransportCompany { get; }
-    public string DepartureTime { get; }
-    public double Price { get; }
-    public int AvailableSeats { get; set; }
-    
-    public Trip(int id, string touristAttraction, string transportCompany, string departureTime, double price, int availableSeats)
+    public string TransportCompany  { get; }
+    public string DepartureTime     { get; }
+    public double Price             { get; }
+    public int    AvailableSeats    { get; init; }
+
+    public Trip(
+        int    id,
+        string touristAttraction,
+        string transportCompany,
+        string departureTime,
+        double price,
+        int    availableSeats)
     {
-        Id = id;
+        Id                = id;
         TouristAttraction = touristAttraction;
-        TransportCompany = transportCompany;
-        DepartureTime = departureTime;
-        Price = price;
-        AvailableSeats = availableSeats;
+        TransportCompany  = transportCompany;
+        DepartureTime     = departureTime;
+        Price             = price;
+        AvailableSeats    = availableSeats;
     }
 
-    public override string ToString()
-    {
-        return $"Trip{{id={Id}, attraction='{TouristAttraction}', company='{TransportCompany}', departure='{DepartureTime}', price={Price}, seats={AvailableSeats}}}";
-    }
+    public override string ToString() =>
+        $"Trip {{ Id={Id}, Attraction='{TouristAttraction}', Company='{TransportCompany}', " +
+        $"Departure='{DepartureTime}', Price={Price}, Seats={AvailableSeats} }}";
 }

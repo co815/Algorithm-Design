@@ -1,40 +1,198 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:models="clr-namespace:TurismClient.Models" 
+        xmlns:models="clr-namespace:TurismClient.Models"
+        xmlns:converters="clr-namespace:TurismClient.Converters"
         x:Class="TurismClient.MainWindow"
-        Title="Aplicație Turism" Width="900" Height="620">
-    
-    <StackPanel Margin="20" Spacing="15">
-        
-        <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,10">
-            <TextBlock x:Name="UserInfoText" Grid.Column="0" VerticalAlignment="Center" FontSize="16"/>
-            <Button Grid.Column="1" Content="Deconectare" Click="LogoutButton_OnClick" Padding="15,5"/>
-        </Grid>
+        Title="Aplicație Turism"
+        Width="960" Height="660"
+        MinWidth="700" MinHeight="500"
+        WindowStartupLocation="CenterScreen">
 
-        <TextBlock Text="Excursii Disponibile" FontSize="24" FontWeight="Bold"/>
-        
-        <ListBox x:Name="TripsListBox" Height="360" SelectionMode="Single">
-            <ListBox.ItemTemplate>
-                <DataTemplate x:DataType="models:Trip">
-                    <StackPanel Orientation="Horizontal" Spacing="20">
-                        <TextBlock Text="{Binding TouristAttraction}" FontWeight="Bold" Width="120"/>
-                        <TextBlock Text="{Binding TransportCompany}" Width="120"/>
-                        <TextBlock Text="{Binding DepartureTime}" Width="150"/>
-                        <TextBlock Text="{Binding Price, StringFormat='{}{0} RON'}" Width="80"/>
-                        <TextBlock Text="{Binding AvailableSeats, StringFormat='{}Locuri: {0}'}" />
-                    </StackPanel>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+    <Window.Styles>
 
-        <TextBlock Text="Rezervare" FontSize="18" FontWeight="Bold"/>
-        <Grid ColumnDefinitions="2*,2*,1*,Auto" ColumnSpacing="10">
-            <TextBox x:Name="CustomerNameBox" Watermark="Nume client" Grid.Column="0"/>
-            <TextBox x:Name="CustomerPhoneBox" Watermark="Telefon client" Grid.Column="1"/>
-            <TextBox x:Name="TicketsCountBox" Watermark="Nr. bilete" Grid.Column="2"/>
-            <Button Grid.Column="3" Content="Rezervă" Width="120" Click="BookTripButton_OnClick"/>
+        <!-- Header bar -->
+        <Style Selector="Border.header">
+            <Setter Property="Background"  Value="#1E6FD9"/>
+            <Setter Property="Padding"     Value="20,12"/>
+        </Style>
+
+        <!-- Section labels -->
+        <Style Selector="TextBlock.section-title">
+            <Setter Property="FontSize"   Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#555"/>
+            <Setter Property="Margin"     Value="0,0,0,6"/>
+        </Style>
+
+        <!-- Primary button -->
+        <Style Selector="Button.primary">
+            <Setter Property="Background"   Value="#1E6FD9"/>
+            <Setter Property="Foreground"   Value="White"/>
+            <Setter Property="FontWeight"   Value="SemiBold"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding"      Value="16,8"/>
+        </Style>
+        <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#1759B3"/>
+        </Style>
+        <Style Selector="Button.primary:disabled /template/ ContentPresenter">
+            <Setter Property="Background" Value="#90B8ED"/>
+        </Style>
+
+        <!-- Secondary / ghost button -->
+        <Style Selector="Button.secondary">
+            <Setter Property="Background"      Value="Transparent"/>
+            <Setter Property="Foreground"      Value="White"/>
+            <Setter Property="BorderBrush"     Value="White"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius"    Value="6"/>
+            <Setter Property="Padding"         Value="14,6"/>
+        </Style>
+
+        <!-- Input fields -->
+        <Style Selector="TextBox">
+            <Setter Property="Height" Value="34"/>
+        </Style>
+
+        <!-- Trip list item -->
+        <Style Selector="ListBoxItem">
+            <Setter Property="Padding" Value="12,8"/>
+        </Style>
+
+        <!-- Status bar -->
+        <Style Selector="Border.statusbar">
+            <Setter Property="Background" Value="#F0F4FA"/>
+            <Setter Property="Padding"    Value="16,6"/>
+        </Style>
+        <Style Selector="TextBlock.status-ok">
+            <Setter Property="Foreground" Value="#1A7A3C"/>
+            <Setter Property="FontSize"   Value="12"/>
+        </Style>
+        <Style Selector="TextBlock.status-error">
+            <Setter Property="Foreground" Value="#C0392B"/>
+            <Setter Property="FontSize"   Value="12"/>
+        </Style>
+
+    </Window.Styles>
+
+    <DockPanel>
+
+        <!-- ── Top header ─────────────────────────────────────────────── -->
+        <Border Classes="header" DockPanel.Dock="Top">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8"
+                            VerticalAlignment="Center">
+                    <TextBlock Text="✈" Foreground="White" FontSize="18"/>
+                    <TextBlock x:Name="AgencyNameText"
+                               Foreground="White" FontSize="15" FontWeight="SemiBold"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                <Button Grid.Column="1" Classes="secondary"
+                        Content="Deconectare"
+                        Click="LogoutButton_OnClick"/>
+            </Grid>
+        </Border>
+
+        <!-- ── Status bar ─────────────────────────────────────────────── -->
+        <Border Classes="statusbar" DockPanel.Dock="Bottom">
+            <TextBlock x:Name="StatusText" Classes="status-ok" Text="Gata."/>
+        </Border>
+
+        <!-- ── Main content ───────────────────────────────────────────── -->
+        <Grid RowDefinitions="Auto,*,Auto" Margin="20,16">
+
+            <!-- Search row -->
+            <Grid Grid.Row="0"
+                  ColumnDefinitions="*,Auto,Auto,Auto,Auto"
+                  ColumnSpacing="8"
+                  Margin="0,0,0,12">
+
+                <TextBox x:Name="SearchAttractionBox"
+                         Grid.Column="0"
+                         Watermark="Destinație (ex: Paris)"/>
+                <TextBox x:Name="SearchStartBox"
+                         Grid.Column="1" Width="150"
+                         Watermark="De la (YYYY-MM-DD HH:mm)"/>
+                <TextBox x:Name="SearchEndBox"
+                         Grid.Column="2" Width="150"
+                         Watermark="Până la (YYYY-MM-DD HH:mm)"/>
+                <Button  x:Name="SearchButton"
+                         Grid.Column="3" Classes="primary"
+                         Content="Caută"
+                         Click="SearchButton_OnClick"/>
+                <Button  x:Name="ClearSearchButton"
+                         Grid.Column="4"
+                         Content="Resetează"
+                         Padding="12,8"
+                         Click="ClearSearchButton_OnClick"/>
+            </Grid>
+
+            <!-- Trips list -->
+            <Border Grid.Row="1"
+                    BorderBrush="#DDE3EE" BorderThickness="1"
+                    CornerRadius="6" ClipToBounds="True">
+                <ListBox x:Name="TripsListBox" SelectionMode="Single"
+                         Background="White">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="models:Trip">
+                            <Grid ColumnDefinitions="2*,2*,2*,*,*" ColumnSpacing="12">
+                                <TextBlock Grid.Column="0"
+                                           Text="{Binding TouristAttraction}"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding TransportCompany}"
+                                           Foreground="#555"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="2"
+                                           Text="{Binding DepartureTime}"
+                                           Foreground="#555"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="3"
+                                           Text="{Binding Price, StringFormat='{}{0:N0} RON'}"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="4"
+                                           Text="{Binding AvailableSeats, StringFormat='{}{0} loc.'}"
+                                           Foreground="{Binding AvailableSeats,
+                                               Converter={x:Static converters:SeatsColorConverter.Instance}}"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+
+            <!-- Booking form -->
+            <Border Grid.Row="2"
+                    Background="#F7F9FC"
+                    BorderBrush="#DDE3EE" BorderThickness="1"
+                    CornerRadius="6"
+                    Padding="16,12"
+                    Margin="0,12,0,0">
+                <StackPanel Spacing="10">
+                    <TextBlock Classes="section-title" Text="REZERVARE EXCURSIE SELECTATĂ"/>
+                    <Grid ColumnDefinitions="2*,2*,*,Auto" ColumnSpacing="10">
+                        <TextBox x:Name="CustomerNameBox"
+                                 Grid.Column="0"
+                                 Watermark="Nume client"/>
+                        <TextBox x:Name="CustomerPhoneBox"
+                                 Grid.Column="1"
+                                 Watermark="Telefon client"/>
+                        <TextBox x:Name="TicketsCountBox"
+                                 Grid.Column="2"
+                                 Watermark="Nr. bilete"/>
+                        <Button  x:Name="BookButton"
+                                 Grid.Column="3"
+                                 Classes="primary"
+                                 Content="Rezervă"
+                                 Width="120"
+                                 Click="BookButton_OnClick"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
         </Grid>
-        <TextBlock x:Name="StatusText" />
-        
-    </StackPanel>
+    </DockPanel>
+
 </Window>

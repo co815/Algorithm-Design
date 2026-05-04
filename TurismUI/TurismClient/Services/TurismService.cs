@@ -1,121 +1,114 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using TurismClient.Models;
 using TurismClient.Protocol;
 
 namespace TurismClient.Services;
 
-public class TurismService : IDisposable
+public sealed class TurismService : IDisposable
 {
-    private readonly ProtobufSocketClient _socketClient;
-
+    private readonly ProtobufSocketClient _socket;
+    
     public event Action? TripsUpdated;
 
     public TurismService(string host, int port)
     {
-        _socketClient = new ProtobufSocketClient(host, port);
-        _socketClient.TripsUpdated += () => TripsUpdated?.Invoke();
+        _socket = new ProtobufSocketClient(host, port);
+        _socket.TripsUpdated += () => TripsUpdated?.Invoke();
     }
-
-    public Agency? Login(string username, string password)
+    
+    public async Task<Agency> LoginAsync(string username, string password)
     {
-        var response = SendAndEnsureSuccess(
-            new RequestEnvelope
+        var response = await SendAndEnsureSuccessAsync(new RequestEnvelope
+        {
+            LoginRequest = new LoginRequest
             {
-                LoginRequest = new LoginRequest
-                {
-                    Username = username,
-                    Password = password
-                }
-            });
+                Username = username,
+                Password = password
+            }
+        }).ConfigureAwait(false);
 
         if (response.PayloadCase != ResponseEnvelope.PayloadOneofCase.LoginResponse)
-        {
-            throw new Exception("Invalid server response for login.");
-        }
+            throw new InvalidOperationException("Unexpected server response for login.");
 
-        var agencyDto = response.LoginResponse.Agency;
-        return new Agency(agencyDto.Id, agencyDto.Name, agencyDto.Username, password);
+        var dto = response.LoginResponse.Agency;
+        return new Agency(dto.Id, dto.Name, dto.Username);
     }
 
-    public IEnumerable<Trip> GetAllTrips()
+    public async Task<IReadOnlyList<Trip>> GetAllTripsAsync()
     {
-        var response = SendAndEnsureSuccess(
-            new RequestEnvelope
-            {
-                GetAllTripsRequest = new GetAllTripsRequest()
-            });
+        var response = await SendAndEnsureSuccessAsync(new RequestEnvelope
+        {
+            GetAllTripsRequest = new GetAllTripsRequest()
+        }).ConfigureAwait(false);
 
         if (response.PayloadCase != ResponseEnvelope.PayloadOneofCase.TripsResponse)
-        {
-            throw new Exception("Invalid server response for get all trips.");
-        }
+            throw new InvalidOperationException("Unexpected server response for GetAllTrips.");
 
-        return response.TripsResponse.Trips.Select(ToTripModel).ToList();
+        return response.TripsResponse.Trips.Select(ToTrip).ToList();
     }
-
-    public IEnumerable<Trip> SearchTrips(string attraction, string startTime, string endTime)
+    
+    public async Task<IReadOnlyList<Trip>> SearchTripsAsync(
+        string attraction,
+        string startTime,
+        string endTime)
     {
-        var response = SendAndEnsureSuccess(
-            new RequestEnvelope
+        var response = await SendAndEnsureSuccessAsync(new RequestEnvelope
+        {
+            SearchTripsRequest = new SearchTripsRequest
             {
-                SearchTripsRequest = new SearchTripsRequest
-                {
-                    Attraction = attraction,
-                    StartTime = startTime,
-                    EndTime = endTime
-                }
-            });
+                Attraction = attraction,
+                StartTime  = startTime,
+                EndTime    = endTime
+            }
+        }).ConfigureAwait(false);
 
         if (response.PayloadCase != ResponseEnvelope.PayloadOneofCase.TripsResponse)
+            throw new InvalidOperationException("Unexpected server response for SearchTrips.");
+
+        return response.TripsResponse.Trips.Select(ToTrip).ToList();
+    }
+    
+    public async Task BookTripAsync(
+        int    tripId,
+        Agency agency,
+        string customerName,
+        string customerPhone,
+        int    ticketsCount)
+    {
+        await SendAndEnsureSuccessAsync(new RequestEnvelope
         {
-            throw new Exception("Invalid server response for search trips.");
-        }
-
-        return response.TripsResponse.Trips.Select(ToTripModel).ToList();
-    }
-
-    public void BookTrip(int tripId, Agency currentAgency, string customerName, string customerPhone, int ticketsCount)
-    {
-        SendAndEnsureSuccess(
-            new RequestEnvelope
+            BookTripRequest = new BookTripRequest
             {
-                BookTripRequest = new BookTripRequest
-                {
-                    TripId = tripId,
-                    AgencyId = currentAgency.Id,
-                    CustomerName = customerName,
-                    CustomerPhone = customerPhone,
-                    TicketsCount = ticketsCount
-                }
-            });
+                TripId        = tripId,
+                AgencyId      = agency.Id,
+                CustomerName  = customerName,
+                CustomerPhone = customerPhone,
+                TicketsCount  = ticketsCount
+            }
+        }).ConfigureAwait(false);
     }
 
-    private ResponseEnvelope SendAndEnsureSuccess(RequestEnvelope requestBody)
+    private async Task<ResponseEnvelope> SendAndEnsureSuccessAsync(RequestEnvelope request)
     {
-        var response = _socketClient.SendRequest(requestBody);
+        var response = await _socket.SendRequestAsync(request).ConfigureAwait(false);
+
         if (!response.Success)
-        {
-            throw new Exception(response.ErrorMessage);
-        }
+            throw new TurismServiceException(response.ErrorMessage);
+
         return response;
     }
 
-    private static Trip ToTripModel(TripDto dto)
-    {
-        return new Trip(
+    private static Trip ToTrip(TripDto dto) =>
+        new Trip(
             dto.Id,
             dto.TouristAttraction,
             dto.TransportCompany,
             dto.DepartureTime,
             dto.Price,
-            dto.AvailableSeats
-        );
-    }
+            dto.AvailableSeats);
 
-    public void Dispose()
-    {
-        _socketClient.Dispose();
-    }
+    public void Dispose() => _socket.Dispose();
 }

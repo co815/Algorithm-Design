@@ -151,3 +151,12 @@
   - Modified `MainWindow.axaml` to include a top bar displaying the currently logged-in agency's name and a "Deconectare" (Logout) button.
   - Updated `MainWindow.axaml.cs` to set the agency name on initialization and handle the logout action.
   - The logout action creates a new `LoginWindow`, sets it as the application's main window, shows it, and closes the current `MainWindow`, which properly disposes the server connection.
+
+04.05.2026
+- Finalized C# Avalonia UI integration with Protobuf socket client:
+  - Deleted obsolete in-memory repositories (`AgencyInMemoryRepository`, `TripInMemoryRepository`, `ReservationInMemoryRepository`) and their interfaces (`IAgencyRepository`, `ITripRepository`, `IReservationRepository`).
+  - Deleted obsolete `HeadlessSmokeClient.cs`.
+  - Added `SeatsColorConverter.cs` in Avalonia UI to dynamically color trip seats based on availability.
+  - Added `TurismServiceException.cs` for robust error handling across the service layer.
+  - Refactored `App`, `Program`, `LoginWindow`, and `MainWindow` to fully rely on the `ProtobufSocketClient` and `TurismService` for all data and authentication logic.
+  - Cleaned up models (`Agency`, `Reservation`, `Trip`) and `TurismService.cs` to align with the remote server architecture.

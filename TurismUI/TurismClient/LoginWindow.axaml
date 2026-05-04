@@ -1,13 +1,58 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="TurismClient.LoginWindow"
-        Title="Autentificare - Turism" Width="400" Height="250"
-        WindowStartupLocation="CenterScreen">
-    <StackPanel Margin="20" Spacing="15" VerticalAlignment="Center">
-        <TextBlock Text="Autentificare Agenție" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"/>
-        <TextBox x:Name="UsernameBox" Watermark="Nume utilizator" />
-        <TextBox x:Name="PasswordBox" Watermark="Parolă" PasswordChar="*" />
-        <Button Content="Autentificare" Width="150" HorizontalAlignment="Center" Click="LoginButton_OnClick"/>
-        <TextBlock x:Name="ErrorText" Foreground="Red" HorizontalAlignment="Center" TextWrapping="Wrap"/>
-    </StackPanel>
+        Title="Autentificare — Turism"
+        Width="420" Height="280"
+        MinWidth="340"
+        WindowStartupLocation="CenterScreen"
+        CanResize="False">
+
+    <Window.Styles>
+        <Style Selector="TextBox">
+            <Setter Property="Height" Value="36"/>
+        </Style>
+        <Style Selector="Button.primary">
+            <Setter Property="Background"  Value="#1E6FD9"/>
+            <Setter Property="Foreground"  Value="White"/>
+            <Setter Property="FontWeight"  Value="SemiBold"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding"     Value="0,8"/>
+        </Style>
+        <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#1759B3"/>
+        </Style>
+    </Window.Styles>
+
+    <Border Padding="32">
+        <StackPanel Spacing="16" VerticalAlignment="Center">
+
+            <TextBlock Text="Autentificare Agenție"
+                       FontSize="22" FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,8"/>
+
+            <TextBox x:Name="UsernameBox"
+                     Watermark="Nume utilizator"
+                     AutomationProperties.Name="Utilizator"/>
+
+            <TextBox x:Name="PasswordBox"
+                     Watermark="Parolă"
+                     PasswordChar="●"
+                     AutomationProperties.Name="Parolă"/>
+
+            <Button x:Name="LoginButton"
+                    Classes="primary"
+                    Content="Autentificare"
+                    HorizontalAlignment="Stretch"
+                    Click="LoginButton_OnClick"/>
+
+            <TextBlock x:Name="ErrorText"
+                       Foreground="#D94040"
+                       HorizontalAlignment="Center"
+                       TextWrapping="Wrap"
+                       IsVisible="False"/>
+
+        </StackPanel>
+    </Border>
+
 </Window>

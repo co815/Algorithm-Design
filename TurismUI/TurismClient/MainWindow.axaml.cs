@@ -1,7 +1,7 @@
+using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Threading;
-using System;
-using System.Linq;
 using TurismClient.Models;
 using TurismClient.Services;
 
@@ -10,41 +10,61 @@ namespace TurismClient;
 public partial class MainWindow : Window
 {
     private readonly TurismService _service;
-    private readonly Agency _currentAgency;
-
+    private readonly Agency        _agency;
+    
     public MainWindow()
     {
         InitializeComponent();
         _service = null!;
-        _currentAgency = null!;
+        _agency  = null!;
     }
 
-    public MainWindow(TurismService service, Agency currentAgency)
+    public MainWindow(TurismService service, Agency agency)
     {
         InitializeComponent();
         _service = service;
-        _currentAgency = currentAgency;
+        _agency  = agency;
 
-        var userInfoText = this.FindControl<TextBlock>("UserInfoText");
-        if (userInfoText != null)
-        {
-            userInfoText.Text = $"Autentificat ca: {_currentAgency.Name}";
-        }
+        AgencyNameText.Text = agency.Name;
 
         _service.TripsUpdated += OnTripsUpdated;
 
-        LoadTrips();
-        SetStatus($"Conectat la server. Agenție: {_currentAgency.Name}");
+        _ = LoadTripsAsync();
+        SetStatus("Conectat la server.", isError: false);
     }
 
-    private void LoadTrips()
+    private async System.Threading.Tasks.Task LoadTripsAsync(
+        string? attraction = null,
+        string? start      = null,
+        string? end        = null)
     {
-        var trips = _service.GetAllTrips().ToList();
-
-        var tripsListBox = this.FindControl<ListBox>("TripsListBox");
-        if (tripsListBox != null)
+        SetBusy(true);
+        try
         {
-            tripsListBox.ItemsSource = trips;
+            IReadOnlyList<Trip> trips;
+
+            if (!string.IsNullOrWhiteSpace(attraction))
+                trips = await _service.SearchTripsAsync(attraction, start ?? "", end ?? "");
+            else
+                trips = await _service.GetAllTripsAsync();
+
+            TripsListBox.ItemsSource = trips;
+
+            SetStatus(trips.Count == 0
+                ? "Nicio excursie găsită."
+                : $"{trips.Count} excursii încărcate.", isError: false);
+        }
+        catch (TurismServiceException ex)
+        {
+            SetStatus(ex.Message, isError: true);
+        }
+        catch (Exception ex)
+        {
+            SetStatus($"Eroare: {ex.Message}", isError: true);
+        }
+        finally
+        {
+            SetBusy(false);
         }
     }
 
@@ -52,66 +72,110 @@ public partial class MainWindow : Window
     {
         Dispatcher.UIThread.Post(() =>
         {
-            LoadTrips();
-            SetStatus("Lista excursiilor a fost actualizată automat.");
+            SetStatus("Lista excursiilor a fost actualizată.", isError: false);
+            _ = LoadTripsAsync(
+                SearchAttractionBox.Text?.Trim(),
+                SearchStartBox.Text?.Trim(),
+                SearchEndBox.Text?.Trim());
         });
     }
 
-    private void BookTripButton_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private void SearchButton_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
+        _ = LoadTripsAsync(
+            SearchAttractionBox.Text?.Trim(),
+            SearchStartBox.Text?.Trim(),
+            SearchEndBox.Text?.Trim());
+    }
+
+    private void ClearSearchButton_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        SearchAttractionBox.Text = string.Empty;
+        SearchStartBox.Text      = string.Empty;
+        SearchEndBox.Text        = string.Empty;
+        _ = LoadTripsAsync();
+    }
+
+    private async void BookButton_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (TripsListBox.SelectedItem is not Trip selectedTrip)
+        {
+            SetStatus("Selectați o excursie din listă înainte de rezervare.", isError: true);
+            return;
+        }
+
+        var customerName  = CustomerNameBox.Text?.Trim()  ?? string.Empty;
+        var customerPhone = CustomerPhoneBox.Text?.Trim()  ?? string.Empty;
+        var ticketsText   = TicketsCountBox.Text?.Trim()   ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(customerName) || string.IsNullOrWhiteSpace(customerPhone))
+        {
+            SetStatus("Completați numele și telefonul clientului.", isError: true);
+            return;
+        }
+
+        if (!int.TryParse(ticketsText, out var ticketsCount) || ticketsCount <= 0)
+        {
+            SetStatus("Numărul de bilete trebuie să fie un număr întreg pozitiv.", isError: true);
+            return;
+        }
+
+        SetBusy(true);
         try
         {
-            var tripsListBox = this.FindControl<ListBox>("TripsListBox");
-            var selectedTrip = tripsListBox?.SelectedItem as Trip;
-            if (selectedTrip == null)
-            {
-                throw new Exception("Selectați o excursie înainte de rezervare.");
-            }
+            await _service.BookTripAsync(selectedTrip.Id, _agency, customerName, customerPhone, ticketsCount);
 
-            var customerName = this.FindControl<TextBox>("CustomerNameBox")?.Text?.Trim() ?? string.Empty;
-            var customerPhone = this.FindControl<TextBox>("CustomerPhoneBox")?.Text?.Trim() ?? string.Empty;
-            var ticketsText = this.FindControl<TextBox>("TicketsCountBox")?.Text?.Trim() ?? string.Empty;
-
-            if (string.IsNullOrWhiteSpace(customerName) || string.IsNullOrWhiteSpace(customerPhone))
-            {
-                throw new Exception("Completați numele și telefonul clientului.");
-            }
-
-            if (!int.TryParse(ticketsText, out var ticketsCount))
-            {
-                throw new Exception("Numărul de bilete trebuie să fie un număr valid.");
-            }
-
-            _service.BookTrip(selectedTrip.Id, _currentAgency, customerName, customerPhone, ticketsCount);
-            SetStatus("Rezervare salvată cu succes.");
-            LoadTrips();
+            SetStatus($"Rezervare confirmată — {ticketsCount} bilet(e) pentru {customerName}.", isError: false);
+            ClearBookingForm();
+            await LoadTripsAsync(
+                SearchAttractionBox.Text?.Trim(),
+                SearchStartBox.Text?.Trim(),
+                SearchEndBox.Text?.Trim());
+        }
+        catch (TurismServiceException ex)
+        {
+            SetStatus(ex.Message, isError: true);
         }
         catch (Exception ex)
         {
-            SetStatus(ex.Message);
+            SetStatus($"Eroare la rezervare: {ex.Message}", isError: true);
+        }
+        finally
+        {
+            SetBusy(false);
         }
     }
 
     private void LogoutButton_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         var loginWindow = new LoginWindow();
-        
-        if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
-        {
+
+        if (Avalonia.Application.Current?.ApplicationLifetime
+                is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
             desktop.MainWindow = loginWindow;
-        }
 
         loginWindow.Show();
-        this.Close();
+        Close();
     }
 
-    private void SetStatus(string message)
+    private void SetStatus(string message, bool isError)
     {
-        var statusText = this.FindControl<TextBlock>("StatusText");
-        if (statusText != null)
-        {
-            statusText.Text = message;
-        }
+        StatusText.Text = message;
+        StatusText.Classes.Set("status-error", isError);
+        StatusText.Classes.Set("status-ok",    !isError);
+    }
+
+    private void SetBusy(bool busy)
+    {
+        SearchButton.IsEnabled = !busy;
+        BookButton.IsEnabled   = !busy;
+    }
+
+    private void ClearBookingForm()
+    {
+        CustomerNameBox.Text  = string.Empty;
+        CustomerPhoneBox.Text = string.Empty;
+        TicketsCountBox.Text  = string.Empty;
     }
 
     protected override void OnClosed(EventArgs e)

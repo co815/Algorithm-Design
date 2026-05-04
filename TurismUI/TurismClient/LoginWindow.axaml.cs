@@ -1,10 +1,8 @@
-using Avalonia;
+using System;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
-using System;
 using TurismClient.Services;
-using TurismClient.Models;
 
 namespace TurismClient;
 
@@ -12,66 +10,92 @@ public partial class LoginWindow : Window
 {
     private TurismService? _service;
 
-    public LoginWindow()
-    {
-        InitializeComponent();
-    }
+    public LoginWindow() => InitializeComponent();
 
-    private void LoginButton_OnClick(object? sender, RoutedEventArgs e)
+    private async void LoginButton_OnClick(object? sender, RoutedEventArgs e)
     {
-        var errorText = this.FindControl<TextBlock>("ErrorText");
-        if (errorText != null) errorText.Text = "";
+        ClearError();
+        SetBusy(true);
 
-        var username = this.FindControl<TextBox>("UsernameBox")?.Text?.Trim() ?? string.Empty;
-        var password = this.FindControl<TextBox>("PasswordBox")?.Text?.Trim() ?? string.Empty;
+        var username = UsernameBox.Text?.Trim() ?? string.Empty;
+        var password = PasswordBox.Text?.Trim() ?? string.Empty;
 
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         {
-            if (errorText != null) errorText.Text = "Introduceți numele de utilizator și parola.";
+            ShowError("Introduceți numele de utilizator și parola.");
+            SetBusy(false);
             return;
         }
 
         try
         {
-            if (_service == null)
-            {
-                var host = Environment.GetEnvironmentVariable("TURISM_SERVER_HOST") ?? "127.0.0.1";
-                var portText = Environment.GetEnvironmentVariable("TURISM_SERVER_PORT");
-                var port = int.TryParse(portText, out var parsedPort) ? parsedPort : 55556;
-                _service = new TurismService(host, port);
-            }
+            _service ??= CreateService();
 
-            var agency = _service.Login(username, password);
-            if (agency != null)
-            {
-                var mainWindow = new MainWindow(_service, agency);
-                if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-                {
-                    desktop.MainWindow = mainWindow;
-                }
-                mainWindow.Show();
-                
-                // Clear the reference so it's not disposed when LoginWindow is closed
-                _service = null; 
-                this.Close();
-            }
-            else
-            {
-                if (errorText != null) errorText.Text = "Autentificare eșuată.";
-            }
+            var agency = await _service.LoginAsync(username, password);
+            
+            var mainWindow = new MainWindow(_service, agency);
+            _service = null;
+
+            if (Avalonia.Application.Current?.ApplicationLifetime
+                    is IClassicDesktopStyleApplicationLifetime desktop)
+                desktop.MainWindow = mainWindow;
+
+            mainWindow.Show();
+            Close();
+        }
+        catch (TurismServiceException ex)
+        {
+            ShowError(ex.Message);
+            DisposeService();
         }
         catch (Exception ex)
         {
-            if (errorText != null) errorText.Text = $"Eroare: {ex.Message}";
-            
-            _service?.Dispose();
-            _service = null;
+            ShowError($"Eroare de conexiune: {ex.Message}");
+            DisposeService();
         }
+        finally
+        {
+            SetBusy(false);
+        }
+    }
+
+    private static TurismService CreateService()
+    {
+        var host = Environment.GetEnvironmentVariable("TURISM_SERVER_HOST") ?? "127.0.0.1";
+        var port = int.TryParse(
+            Environment.GetEnvironmentVariable("TURISM_SERVER_PORT"), out var p) ? p : 55556;
+        return new TurismService(host, port);
+    }
+
+    private void ShowError(string message)
+    {
+        ErrorText.Text      = message;
+        ErrorText.IsVisible = true;
+    }
+
+    private void ClearError()
+    {
+        ErrorText.Text      = string.Empty;
+        ErrorText.IsVisible = false;
+    }
+
+    private void SetBusy(bool busy)
+    {
+        LoginButton.IsEnabled = !busy;
+        UsernameBox.IsEnabled = !busy;
+        PasswordBox.IsEnabled = !busy;
+        LoginButton.Content   = busy ? "Se conectează…" : "Autentificare";
+    }
+
+    private void DisposeService()
+    {
+        _service?.Dispose();
+        _service = null;
     }
 
     protected override void OnClosed(EventArgs e)
     {
-        _service?.Dispose();
+        DisposeService();
         base.OnClosed(e);
     }
 }
