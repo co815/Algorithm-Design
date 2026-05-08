@@ -25,7 +25,7 @@ public class Trip {
     @Column(name = "available_seats", nullable = false)
     private int availableSeats;
 
-    protected Trip() {}
+    public Trip() {}
 
     public Trip(int id, String touristAttraction, String transportCompany,
                 String departureTime, double price, int availableSeats) {
@@ -44,6 +44,10 @@ public class Trip {
     public double getPrice() { return price; }
     public int getAvailableSeats() { return availableSeats; }
     public void setAvailableSeats(int availableSeats) { this.availableSeats = availableSeats; }
+    public void setTouristAttraction(String touristAttraction) { this.touristAttraction = touristAttraction; }
+    public void setTransportCompany(String transportCompany) { this.transportCompany = transportCompany; }
+    public void setDepartureTime(String departureTime) { this.departureTime = departureTime; }
+    public void setPrice(double price) { this.price = price; }
 
     @Override
     public String toString() {

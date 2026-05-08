@@ -160,3 +160,25 @@
   - Added `TurismServiceException.cs` for robust error handling across the service layer.
   - Refactored `App`, `Program`, `LoginWindow`, and `MainWindow` to fully rely on the `ProtobufSocketClient` and `TurismService` for all data and authentication logic.
   - Cleaned up models (`Agency`, `Reservation`, `Trip`) and `TurismService.cs` to align with the remote server architecture.
+
+08.05.2026
+- Added Spring Boot REST layer for Trip management:
+  - Modified `pom.xml` to import Spring Boot BOM (`spring-boot-dependencies:3.2.5`) and added starters: `spring-boot-starter-web`, `spring-boot-starter-data-jpa`, `spring-boot-starter-test`.
+  - Added `src/main/resources/application.properties` with SQLite datasource settings and `server.port=8080`.
+  - Added `src/main/resources/application-test.properties` with isolated test DB (`target/test-rest.db`) and `create-drop` schema strategy.
+  - Modified `src/main/java/model/Trip.java`:
+    - made no-arg constructor public for JSON/JPA deserialization
+    - added setters for `touristAttraction`, `transportCompany`, `departureTime`, and `price`
+  - Added `src/main/java/rest/TripSpringRepository.java` (`JpaRepository<Trip, Integer>`).
+  - Added `src/main/java/rest/RestMain.java` (`@SpringBootApplication` + `@EntityScan("model")`) as REST entry point.
+  - Added `src/main/java/rest/TripRestController.java` with CRUD endpoints:
+    - `GET /trips`
+    - `GET /trips/{id}`
+    - `POST /trips`
+    - `PUT /trips/{id}`
+    - `DELETE /trips/{id}`
+- Added REST integration tests:
+  - Added `src/test/java/rest/TripRestControllerTest.java` with 8 MockMvc integration tests covering all CRUD + not-found scenarios.
+  - Tightened 404 assertions to distinguish entity-level 404 from missing-route/static-resource 404.
+- Verified REST workflow end-to-end:
+  - executed full CRUD flow on port 8080 (create → read → update → delete → 404 after delete).
