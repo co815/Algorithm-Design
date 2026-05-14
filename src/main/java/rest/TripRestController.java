@@ -31,7 +31,13 @@ public class TripRestController {
     }
 
     @PostMapping
-    public ResponseEntity<Trip> createTrip(@RequestBody Trip trip) {
+    public ResponseEntity<Trip> createTrip(@RequestBody Trip tripRequest) {
+        Trip trip = new Trip();
+        trip.setTouristAttraction(tripRequest.getTouristAttraction());
+        trip.setTransportCompany(tripRequest.getTransportCompany());
+        trip.setDepartureTime(tripRequest.getDepartureTime());
+        trip.setPrice(tripRequest.getPrice());
+        trip.setAvailableSeats(tripRequest.getAvailableSeats());
         Trip saved = repo.save(trip);
         return ResponseEntity.created(URI.create("/trips/" + saved.getId())).body(saved);
     }

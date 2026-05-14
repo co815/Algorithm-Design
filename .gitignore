@@ -27,3 +27,5 @@ TurismUI/TurismClient/.idea/
 graphify-out
 docs.worktrees
 docs
+/turism.db-shm
+/turism.db-wal

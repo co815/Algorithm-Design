@@ -182,3 +182,13 @@
   - Tightened 404 assertions to distinguish entity-level 404 from missing-route/static-resource 404.
 - Verified REST workflow end-to-end:
   - executed full CRUD flow on port 8080 (create → read → update → delete → 404 after delete).
+
+14.05.2026
+- Enabled SQLite WAL journal mode for concurrent access between socket server and REST server:
+  - Modified `src/main/resources/hibernate.cfg.xml`: appended `?journal_mode=WAL` to the connection URL so the socket server opens the database in WAL mode.
+  - Modified `src/main/resources/application.properties`: appended `?journal_mode=WAL` to the datasource URL so the REST server opens the same `turism.db` in WAL mode.
+  - Both servers now share `turism.db` without blocking each other on reads.
+  - Updated `.gitignore` to exclude `/turism.db-shm` and `/turism.db-wal` (WAL mode side-files created at runtime).
+
+- Fixed `POST /trips` to prevent client-supplied IDs from conflicting with the database-assigned sequence:
+  - Modified `src/main/java/rest/TripRestController.java`: refactored `createTrip()` to construct a fresh `Trip` object and copy only domain fields (`touristAttraction`, `transportCompany`, `departureTime`, `price`, `availableSeats`) from the request body; the `id` field is now always assigned by the database.
