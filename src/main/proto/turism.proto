@@ -63,6 +63,12 @@ message ResponseEnvelope {
     LoginResponse login_response = 10;
     TripsResponse trips_response = 11;
     BookTripResponse book_trip_response = 12;
+    GetReservationsByAgencyResponse get_reservations_by_agency_response = 13;
+    EditReservationResponse         edit_reservation_response           = 14;
+    DeleteReservationResponse       delete_reservation_response         = 15;
+    CreateTripResponse create_trip_response = 16;
+    UpdateTripResponse update_trip_response = 17;
+    DeleteTripResponse delete_trip_response = 18;
   }
 }
 
@@ -74,10 +80,86 @@ message RequestEnvelope {
     GetAllTripsRequest get_all_trips_request = 11;
     SearchTripsRequest search_trips_request = 12;
     BookTripRequest book_trip_request = 13;
+    GetReservationsByAgencyRequest get_reservations_by_agency_request = 14;
+    EditReservationRequest         edit_reservation_request           = 15;
+    DeleteReservationRequest       delete_reservation_request         = 16;
+    CreateTripRequest create_trip_request = 17;
+    UpdateTripRequest update_trip_request = 18;
+    DeleteTripRequest delete_trip_request = 19;
   }
 }
 
 message TripsUpdatedNotification {
+}
+
+message ReservationDto {
+  int32  id                 = 1;
+  string customer_name      = 2;
+  string customer_phone     = 3;
+  int32  number_of_tickets  = 4;
+  int32  trip_id            = 5;
+  string trip_attraction    = 6;
+  int32  agency_id          = 7;
+}
+
+message GetReservationsByAgencyRequest {
+  int32 agency_id = 1;
+}
+
+message GetReservationsByAgencyResponse {
+  repeated ReservationDto reservations = 1;
+}
+
+message EditReservationRequest {
+  int32  reservation_id    = 1;
+  string customer_name     = 2;
+  string customer_phone    = 3;
+  int32  number_of_tickets = 4;
+}
+
+message EditReservationResponse {
+  ReservationDto reservation = 1;
+}
+
+message DeleteReservationRequest {
+  int32 reservation_id = 1;
+}
+
+message DeleteReservationResponse {
+  bool success = 1;
+}
+
+message CreateTripRequest {
+  string tourist_attraction = 1;
+  string transport_company  = 2;
+  string departure_time     = 3;
+  double price              = 4;
+  int32  available_seats    = 5;
+}
+
+message CreateTripResponse {
+  TripDto trip = 1;
+}
+
+message UpdateTripRequest {
+  int32  id                 = 1;
+  string tourist_attraction = 2;
+  string transport_company  = 3;
+  string departure_time     = 4;
+  double price              = 5;
+  int32  available_seats    = 6;
+}
+
+message UpdateTripResponse {
+  TripDto trip = 1;
+}
+
+message DeleteTripRequest {
+  int32 trip_id = 1;
+}
+
+message DeleteTripResponse {
+  bool success = 1;
 }
 
 message ServerEnvelope {

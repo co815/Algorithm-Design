@@ -8,4 +8,8 @@ public interface IReservationRepository {
     Reservation findById(int id);
     List<Reservation> findAll();
     List<Reservation> findByTrip(int tripId);
+    List<Reservation> findByAgency(int agencyId);
+    void delete(int id);
+    void update(Reservation reservation);
+    void resequenceIds();
 }

@@ -1,0 +1,13 @@
+.toolbar { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
+.toolbar h2 { margin: 0; flex: 1; }
+.filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.filters input { padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #eee; }
+th { background: #f5f5f5; font-weight: 600; }
+tr:hover td { background: #fafafa; }
+.booking-row td { background: #e8f5e9; padding: 10px 12px; }
+.booking-row input[type="number"] { width: 60px; padding: 4px 6px; margin: 0 8px; border: 1px solid #ccc; border-radius: 4px; }
+.error { color: #c62828; margin: 8px 0; }
+button { cursor: pointer; padding: 4px 10px; border: 1px solid #ccc; border-radius: 4px; background: #fff; font-size: 0.85rem; }
+button:hover { background: #f0f0f0; }

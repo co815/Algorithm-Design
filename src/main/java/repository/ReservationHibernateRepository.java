@@ -51,4 +51,48 @@ public class ReservationHibernateRepository implements IReservationRepository {
                     .list();
         }
     }
+
+    @Override
+    public List<Reservation> findByAgency(int agencyId) {
+        try (Session s = sf.openSession()) {
+            return s.createQuery("from Reservation where agency.id = :aid", Reservation.class)
+                    .setParameter("aid", agencyId)
+                    .list();
+        }
+    }
+
+    @Override
+    public void delete(int id) {
+        try (Session s = sf.openSession()) {
+            Transaction tx = s.beginTransaction();
+            Reservation r = s.get(Reservation.class, id);
+            if (r != null) s.remove(r);
+            tx.commit();
+        }
+    }
+
+    @Override
+    public void update(Reservation reservation) {
+        try (Session s = sf.openSession()) {
+            Transaction tx = s.beginTransaction();
+            s.merge(reservation);
+            tx.commit();
+        }
+    }
+
+    @Override
+    public void resequenceIds() {
+        try (Session s = sf.openSession()) {
+            Transaction tx = s.beginTransaction();
+            s.createNativeQuery("UPDATE reservations SET id = id + 1000000").executeUpdate();
+            s.createNativeQuery(
+                "UPDATE reservations SET id = (" +
+                "  SELECT rn FROM (" +
+                "    SELECT id AS curr_id, ROW_NUMBER() OVER (ORDER BY id ASC) AS rn" +
+                "    FROM reservations" +
+                "  ) WHERE curr_id = reservations.id)"
+            ).executeUpdate();
+            tx.commit();
+        }
+    }
 }

@@ -1,6 +1,8 @@
 package server;
 
 import model.Agency;
+import model.Reservation;
+import model.Trip;
 import protocol.TurismProtos;
 import service.TurismServerService;
 
@@ -54,7 +56,13 @@ public class ClientHandler implements Runnable, ClientConnection {
                 case LOGIN_REQUEST -> handleLogin(request);
                 case GET_ALL_TRIPS_REQUEST -> handleGetAllTrips(request);
                 case SEARCH_TRIPS_REQUEST -> handleSearchTrips(request);
-                case BOOK_TRIP_REQUEST -> handleBookTrip(request);
+                case BOOK_TRIP_REQUEST                   -> handleBookTrip(request);
+                case GET_RESERVATIONS_BY_AGENCY_REQUEST -> handleGetReservationsByAgency(request);
+                case EDIT_RESERVATION_REQUEST           -> handleEditReservation(request);
+                case DELETE_RESERVATION_REQUEST         -> handleDeleteReservation(request);
+                case CREATE_TRIP_REQUEST -> handleCreateTrip(request);
+                case UPDATE_TRIP_REQUEST -> handleUpdateTrip(request);
+                case DELETE_TRIP_REQUEST -> handleDeleteTrip(request);
                 case PAYLOAD_NOT_SET ->
                         errorResponse(request.getRequestId(), "Invalid request: no payload was provided.");
             };
@@ -116,6 +124,105 @@ public class ClientHandler implements Runnable, ClientConnection {
                 .setRequestId(request.getRequestId())
                 .setSuccess(true)
                 .setBookTripResponse(TurismProtos.BookTripResponse.newBuilder().build())
+                .build();
+    }
+
+    private TurismProtos.ResponseEnvelope handleGetReservationsByAgency(
+            TurismProtos.RequestEnvelope request) {
+        int agencyId = request.getGetReservationsByAgencyRequest().getAgencyId();
+        return TurismProtos.ResponseEnvelope.newBuilder()
+                .setRequestId(request.getRequestId())
+                .setSuccess(true)
+                .setGetReservationsByAgencyResponse(
+                        ProtobufMapper.toReservationsResponse(service.getReservationsByAgency(agencyId)))
+                .build();
+    }
+
+    private TurismProtos.ResponseEnvelope handleEditReservation(
+            TurismProtos.RequestEnvelope request) {
+        TurismProtos.EditReservationRequest req = request.getEditReservationRequest();
+        Reservation updated = service.editReservation(
+                req.getReservationId(),
+                req.getCustomerName(),
+                req.getCustomerPhone(),
+                req.getNumberOfTickets());
+        return TurismProtos.ResponseEnvelope.newBuilder()
+                .setRequestId(request.getRequestId())
+                .setSuccess(true)
+                .setEditReservationResponse(
+                        TurismProtos.EditReservationResponse.newBuilder()
+                                .setReservation(ProtobufMapper.toReservationDto(updated))
+                                .build())
+                .build();
+    }
+
+    private TurismProtos.ResponseEnvelope handleDeleteReservation(
+            TurismProtos.RequestEnvelope request) {
+        service.deleteReservation(request.getDeleteReservationRequest().getReservationId());
+        return TurismProtos.ResponseEnvelope.newBuilder()
+                .setRequestId(request.getRequestId())
+                .setSuccess(true)
+                .setDeleteReservationResponse(
+                        TurismProtos.DeleteReservationResponse.newBuilder()
+                                .setSuccess(true)
+                                .build())
+                .build();
+    }
+
+    private TurismProtos.ResponseEnvelope handleCreateTrip(TurismProtos.RequestEnvelope request) {
+        TurismProtos.CreateTripRequest req = request.getCreateTripRequest();
+        Trip trip = service.createTrip(
+                req.getTouristAttraction(),
+                req.getTransportCompany(),
+                req.getDepartureTime(),
+                req.getPrice(),
+                req.getAvailableSeats()
+        );
+        server.broadcastTripsUpdated();
+        return TurismProtos.ResponseEnvelope.newBuilder()
+                .setRequestId(request.getRequestId())
+                .setSuccess(true)
+                .setCreateTripResponse(
+                        TurismProtos.CreateTripResponse.newBuilder()
+                                .setTrip(ProtobufMapper.toTripDto(trip))
+                                .build()
+                )
+                .build();
+    }
+
+    private TurismProtos.ResponseEnvelope handleUpdateTrip(TurismProtos.RequestEnvelope request) {
+        TurismProtos.UpdateTripRequest req = request.getUpdateTripRequest();
+        Trip trip = service.updateTrip(
+                req.getId(),
+                req.getTouristAttraction(),
+                req.getTransportCompany(),
+                req.getDepartureTime(),
+                req.getPrice(),
+                req.getAvailableSeats()
+        );
+        server.broadcastTripsUpdated();
+        return TurismProtos.ResponseEnvelope.newBuilder()
+                .setRequestId(request.getRequestId())
+                .setSuccess(true)
+                .setUpdateTripResponse(
+                        TurismProtos.UpdateTripResponse.newBuilder()
+                                .setTrip(ProtobufMapper.toTripDto(trip))
+                                .build()
+                )
+                .build();
+    }
+
+    private TurismProtos.ResponseEnvelope handleDeleteTrip(TurismProtos.RequestEnvelope request) {
+        service.deleteTrip(request.getDeleteTripRequest().getTripId());
+        server.broadcastTripsUpdated();
+        return TurismProtos.ResponseEnvelope.newBuilder()
+                .setRequestId(request.getRequestId())
+                .setSuccess(true)
+                .setDeleteTripResponse(
+                        TurismProtos.DeleteTripResponse.newBuilder()
+                                .setSuccess(true)
+                                .build()
+                )
                 .build();
     }
 

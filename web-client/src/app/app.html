@@ -1,0 +1,25 @@
+<main>
+  <header>
+    <h1>Gestiune Excursii</h1>
+    @if (auth.isLoggedIn()) {
+      <nav class="tabs">
+        <button [class.active]="tab() === 'trips'" (click)="tab.set('trips')">Excursii</button>
+        <button [class.active]="tab() === 'reservations'" (click)="tab.set('reservations')">Rezervări</button>
+      </nav>
+      <div class="user-bar">
+        <span>{{ auth.agency()?.name }}</span>
+        <button (click)="auth.logout()">Deconectare</button>
+      </div>
+    }
+  </header>
+  @if (auth.isLoggedIn()) {
+    @if (tab() === 'trips') {
+      <app-trip-list></app-trip-list>
+    }
+    @if (tab() === 'reservations') {
+      <app-reservation-list></app-reservation-list>
+    }
+  } @else {
+    <app-login></app-login>
+  }
+</main>

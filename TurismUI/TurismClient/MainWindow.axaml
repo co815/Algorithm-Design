@@ -10,13 +10,11 @@
 
     <Window.Styles>
 
-        <!-- Header bar -->
         <Style Selector="Border.header">
             <Setter Property="Background"  Value="#1E6FD9"/>
             <Setter Property="Padding"     Value="20,12"/>
         </Style>
 
-        <!-- Section labels -->
         <Style Selector="TextBlock.section-title">
             <Setter Property="FontSize"   Value="13"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
@@ -24,7 +22,6 @@
             <Setter Property="Margin"     Value="0,0,0,6"/>
         </Style>
 
-        <!-- Primary button -->
         <Style Selector="Button.primary">
             <Setter Property="Background"   Value="#1E6FD9"/>
             <Setter Property="Foreground"   Value="White"/>
@@ -39,7 +36,6 @@
             <Setter Property="Background" Value="#90B8ED"/>
         </Style>
 
-        <!-- Secondary / ghost button -->
         <Style Selector="Button.secondary">
             <Setter Property="Background"      Value="Transparent"/>
             <Setter Property="Foreground"      Value="White"/>
@@ -49,17 +45,14 @@
             <Setter Property="Padding"         Value="14,6"/>
         </Style>
 
-        <!-- Input fields -->
         <Style Selector="TextBox">
             <Setter Property="Height" Value="34"/>
         </Style>
 
-        <!-- Trip list item -->
         <Style Selector="ListBoxItem">
             <Setter Property="Padding" Value="12,8"/>
         </Style>
 
-        <!-- Status bar -->
         <Style Selector="Border.statusbar">
             <Setter Property="Background" Value="#F0F4FA"/>
             <Setter Property="Padding"    Value="16,6"/>
@@ -77,9 +70,8 @@
 
     <DockPanel>
 
-        <!-- ── Top header ─────────────────────────────────────────────── -->
         <Border Classes="header" DockPanel.Dock="Top">
-            <Grid ColumnDefinitions="*,Auto">
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8"
                             VerticalAlignment="Center">
                     <TextBlock Text="✈" Foreground="White" FontSize="18"/>
@@ -87,21 +79,22 @@
                                Foreground="White" FontSize="15" FontWeight="SemiBold"
                                VerticalAlignment="Center"/>
                 </StackPanel>
-                <Button Grid.Column="1" Classes="secondary"
+                <Button x:Name="ReservationsButton"
+                        Grid.Column="1" Classes="secondary"
+                        Content="Rezervări"
+                        Click="ReservationsButton_OnClick"/>
+                <Button Grid.Column="2" Classes="secondary"
                         Content="Deconectare"
                         Click="LogoutButton_OnClick"/>
             </Grid>
         </Border>
 
-        <!-- ── Status bar ─────────────────────────────────────────────── -->
         <Border Classes="statusbar" DockPanel.Dock="Bottom">
             <TextBlock x:Name="StatusText" Classes="status-ok" Text="Gata."/>
         </Border>
 
-        <!-- ── Main content ───────────────────────────────────────────── -->
-        <Grid RowDefinitions="Auto,*,Auto" Margin="20,16">
+        <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="20,16">
 
-            <!-- Search row -->
             <Grid Grid.Row="0"
                   ColumnDefinitions="*,Auto,Auto,Auto,Auto"
                   ColumnSpacing="8"
@@ -127,12 +120,32 @@
                          Click="ClearSearchButton_OnClick"/>
             </Grid>
 
-            <!-- Trips list -->
-            <Border Grid.Row="1"
+            <StackPanel Grid.Row="1"
+                        Orientation="Horizontal" Spacing="8"
+                        Margin="0,0,0,12">
+                <Button x:Name="AddTripButton"
+                        Classes="primary"
+                        Content="Adaugă excursie"
+                        Click="AddTripButton_OnClick"/>
+                <Button x:Name="EditTripButton"
+                        Classes="primary"
+                        Content="Editează excursie"
+                        IsEnabled="False"
+                        Click="EditTripButton_OnClick"/>
+                <Button x:Name="DeleteTripButton"
+                        Foreground="#C0392B"
+                        Content="Șterge excursie"
+                        IsEnabled="False"
+                        Padding="14,8"
+                        Click="DeleteTripButton_OnClick"/>
+            </StackPanel>
+
+            <Border Grid.Row="2"
                     BorderBrush="#DDE3EE" BorderThickness="1"
                     CornerRadius="6" ClipToBounds="True">
                 <ListBox x:Name="TripsListBox" SelectionMode="Single"
-                         Background="White">
+                         Background="White"
+                         SelectionChanged="TripsListBox_SelectionChanged">
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="models:Trip">
                             <Grid ColumnDefinitions="2*,2*,2*,*,*" ColumnSpacing="12">
@@ -163,8 +176,7 @@
                 </ListBox>
             </Border>
 
-            <!-- Booking form -->
-            <Border Grid.Row="2"
+            <Border Grid.Row="3"
                     Background="#F7F9FC"
                     BorderBrush="#DDE3EE" BorderThickness="1"
                     CornerRadius="6"

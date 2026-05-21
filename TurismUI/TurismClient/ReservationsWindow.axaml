@@ -1,0 +1,125 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:TurismClient.Models"
+        x:Class="TurismClient.ReservationsWindow"
+        Title="Rezervări"
+        Width="860" Height="580"
+        MinWidth="600" MinHeight="400"
+        WindowStartupLocation="CenterOwner">
+
+    <Window.Styles>
+        <Style Selector="Border.header">
+            <Setter Property="Background" Value="#1E6FD9"/>
+            <Setter Property="Padding"    Value="20,12"/>
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="Height" Value="34"/>
+        </Style>
+        <Style Selector="Button.primary">
+            <Setter Property="Background"   Value="#1E6FD9"/>
+            <Setter Property="Foreground"   Value="White"/>
+            <Setter Property="FontWeight"   Value="SemiBold"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding"      Value="14,8"/>
+        </Style>
+        <Style Selector="Button.danger">
+            <Setter Property="Background"   Value="#C0392B"/>
+            <Setter Property="Foreground"   Value="White"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding"      Value="12,6"/>
+        </Style>
+        <Style Selector="Border.statusbar">
+            <Setter Property="Background" Value="#F0F4FA"/>
+            <Setter Property="Padding"    Value="16,6"/>
+        </Style>
+        <Style Selector="TextBlock.status-ok">
+            <Setter Property="Foreground" Value="#1A7A3C"/>
+            <Setter Property="FontSize"   Value="12"/>
+        </Style>
+        <Style Selector="TextBlock.status-error">
+            <Setter Property="Foreground" Value="#C0392B"/>
+            <Setter Property="FontSize"   Value="12"/>
+        </Style>
+        <Style Selector="TextBlock.section-title">
+            <Setter Property="FontSize"   Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#555"/>
+            <Setter Property="Margin"     Value="0,0,0,6"/>
+        </Style>
+    </Window.Styles>
+
+    <DockPanel>
+
+        <!-- Header -->
+        <Border Classes="header" DockPanel.Dock="Top">
+            <TextBlock x:Name="TitleText"
+                       Foreground="White" FontSize="15" FontWeight="SemiBold"
+                       VerticalAlignment="Center"/>
+        </Border>
+
+        <!-- Status bar -->
+        <Border Classes="statusbar" DockPanel.Dock="Bottom">
+            <TextBlock x:Name="StatusText" Classes="status-ok" Text="Gata."/>
+        </Border>
+
+        <!-- Main -->
+        <Grid RowDefinitions="*,Auto" Margin="20,16">
+
+            <!-- Reservations list -->
+            <Border Grid.Row="0"
+                    BorderBrush="#DDE3EE" BorderThickness="1"
+                    CornerRadius="6" ClipToBounds="True">
+                <ListBox x:Name="ReservationsListBox" SelectionMode="Single" Background="White">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="models:Reservation">
+                            <Grid ColumnDefinitions="Auto,2*,2*,Auto,2*" ColumnSpacing="12">
+                                <TextBlock Grid.Column="0"
+                                           Text="{Binding Id, StringFormat='#{0}'}"
+                                           Foreground="#888" Width="40"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding CustomerName}"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="2"
+                                           Text="{Binding CustomerPhone}"
+                                           Foreground="#555"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="3"
+                                           Text="{Binding NumberOfTickets, StringFormat='{}{0} bil.'}"
+                                           VerticalAlignment="Center" Width="60"/>
+                                <TextBlock Grid.Column="4"
+                                           Text="{Binding TripAttraction}"
+                                           Foreground="#555"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+
+            <!-- Edit + action panel -->
+            <Border Grid.Row="1"
+                    Background="#F7F9FC"
+                    BorderBrush="#DDE3EE" BorderThickness="1"
+                    CornerRadius="6" Padding="16,12" Margin="0,12,0,0">
+                <StackPanel Spacing="10">
+                    <TextBlock Classes="section-title" Text="EDITARE / ACȚIUNI"/>
+                    <Grid ColumnDefinitions="2*,2*,*,Auto,Auto,Auto" ColumnSpacing="10">
+                        <TextBox x:Name="EditNameBox"    Grid.Column="0" Watermark="Nume client"/>
+                        <TextBox x:Name="EditPhoneBox"   Grid.Column="1" Watermark="Telefon"/>
+                        <TextBox x:Name="EditTicketsBox" Grid.Column="2" Watermark="Bilete"/>
+                        <Button x:Name="SaveButton"   Grid.Column="3" Classes="primary"
+                                Content="Salvează" Click="SaveButton_OnClick"/>
+                        <Button x:Name="EditButton"   Grid.Column="4"
+                                Content="Editează" Padding="12,8"
+                                Click="EditButton_OnClick"/>
+                        <Button x:Name="DeleteButton" Grid.Column="5" Classes="danger"
+                                Content="Șterge" Click="DeleteButton_OnClick"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+        </Grid>
+    </DockPanel>
+</Window>

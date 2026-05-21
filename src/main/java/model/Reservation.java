@@ -46,6 +46,10 @@ public class Reservation {
     public Trip getTrip() { return trip; }
     public Agency getAgency() { return agency; }
 
+    public void setCustomerName(String customerName) { this.customerName = customerName; }
+    public void setCustomerPhone(String customerPhone) { this.customerPhone = customerPhone; }
+    public void setNumberOfTickets(int numberOfTickets) { this.numberOfTickets = numberOfTickets; }
+
     @Override
     public String toString() {
         return "Reservation{id=" + id +

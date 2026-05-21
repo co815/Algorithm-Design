@@ -1,0 +1,19 @@
+<div class="login-box">
+  <h2>Autentificare</h2>
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="field">
+      <label>Utilizator</label>
+      <input formControlName="username" type="text" autocomplete="username" />
+    </div>
+    <div class="field">
+      <label>Parolă</label>
+      <input formControlName="password" type="password" autocomplete="current-password" />
+    </div>
+    @if (error()) {
+      <div class="error">{{ error() }}</div>
+    }
+    <button type="submit" [disabled]="form.invalid || loading()">
+      {{ loading() ? 'Se procesează...' : 'Conectare' }}
+    </button>
+  </form>
+</div>

@@ -146,6 +146,98 @@ public partial class MainWindow : Window
         }
     }
 
+    private void ReservationsButton_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        var window = new ReservationsWindow(_service, _agency);
+        window.Show();
+    }
+
+    private void TripsListBox_SelectionChanged(object? sender,
+        Avalonia.Controls.SelectionChangedEventArgs e)
+    {
+        var hasSelection   = TripsListBox.SelectedItem is Trip;
+        EditTripButton.IsEnabled   = hasSelection;
+        DeleteTripButton.IsEnabled = hasSelection;
+    }
+
+    private async void AddTripButton_OnClick(object? sender,
+        Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        var dlg   = new EditTripWindow((Trip?)null);
+        var saved = await dlg.ShowDialog<bool>(this);
+        if (!saved || dlg.Result is null) return;
+
+        SetBusy(true);
+        try
+        {
+            var d = dlg.Result;
+            await _service.CreateTripAsync(
+                d.TouristAttraction, d.TransportCompany,
+                d.DepartureTime, d.Price, d.AvailableSeats);
+            SetStatus("Excursie adăugată.", isError: false);
+            await LoadTripsAsync(
+                SearchAttractionBox.Text?.Trim(),
+                SearchStartBox.Text?.Trim(),
+                SearchEndBox.Text?.Trim());
+        }
+        catch (TurismServiceException ex) { SetStatus(ex.Message, isError: true); }
+        catch (System.Exception ex)       { SetStatus($"Eroare: {ex.Message}", isError: true); }
+        finally { SetBusy(false); }
+    }
+
+    private async void EditTripButton_OnClick(object? sender,
+        Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (TripsListBox.SelectedItem is not Trip selected) return;
+
+        var dlg   = new EditTripWindow(selected);
+        var saved = await dlg.ShowDialog<bool>(this);
+        if (!saved || dlg.Result is null) return;
+
+        SetBusy(true);
+        try
+        {
+            var d = dlg.Result;
+            await _service.UpdateTripAsync(
+                selected.Id,
+                d.TouristAttraction, d.TransportCompany,
+                d.DepartureTime, d.Price, d.AvailableSeats);
+            SetStatus("Excursie actualizată.", isError: false);
+            await LoadTripsAsync(
+                SearchAttractionBox.Text?.Trim(),
+                SearchStartBox.Text?.Trim(),
+                SearchEndBox.Text?.Trim());
+        }
+        catch (TurismServiceException ex) { SetStatus(ex.Message, isError: true); }
+        catch (System.Exception ex)       { SetStatus($"Eroare: {ex.Message}", isError: true); }
+        finally { SetBusy(false); }
+    }
+
+    private async void DeleteTripButton_OnClick(object? sender,
+        Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (TripsListBox.SelectedItem is not Trip selected) return;
+
+        var confirm = new ConfirmWindow(
+            $"Ștergi excursia «{selected.TouristAttraction}»?\nToate rezervările asociate vor fi șterse.");
+        var ok = await confirm.ShowDialog<bool>(this);
+        if (!ok) return;
+
+        SetBusy(true);
+        try
+        {
+            await _service.DeleteTripAsync(selected.Id);
+            SetStatus($"Excursia «{selected.TouristAttraction}» ștearsă.", isError: false);
+            await LoadTripsAsync(
+                SearchAttractionBox.Text?.Trim(),
+                SearchStartBox.Text?.Trim(),
+                SearchEndBox.Text?.Trim());
+        }
+        catch (TurismServiceException ex) { SetStatus(ex.Message, isError: true); }
+        catch (System.Exception ex)       { SetStatus($"Eroare: {ex.Message}", isError: true); }
+        finally { SetBusy(false); }
+    }
+
     private void LogoutButton_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         var loginWindow = new LoginWindow();
@@ -167,8 +259,21 @@ public partial class MainWindow : Window
 
     private void SetBusy(bool busy)
     {
-        SearchButton.IsEnabled = !busy;
-        BookButton.IsEnabled   = !busy;
+        SearchButton.IsEnabled       = !busy;
+        BookButton.IsEnabled         = !busy;
+        ReservationsButton.IsEnabled = !busy;
+        AddTripButton.IsEnabled      = !busy;
+        if (!busy)
+        {
+            var hasSelection = TripsListBox.SelectedItem is Trip;
+            EditTripButton.IsEnabled   = hasSelection;
+            DeleteTripButton.IsEnabled = hasSelection;
+        }
+        else
+        {
+            EditTripButton.IsEnabled   = false;
+            DeleteTripButton.IsEnabled = false;
+        }
     }
 
     private void ClearBookingForm()

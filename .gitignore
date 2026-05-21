@@ -29,3 +29,5 @@ docs.worktrees
 docs
 /turism.db-shm
 /turism.db-wal
+/web-client/.angular/
+/web-client/.vscode/

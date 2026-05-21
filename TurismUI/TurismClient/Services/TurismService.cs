@@ -101,6 +101,101 @@ public sealed class TurismService : IDisposable
         return response;
     }
 
+    public async Task<IReadOnlyList<Reservation>> GetReservationsAsync(int agencyId)
+    {
+        var response = await SendAndEnsureSuccessAsync(new RequestEnvelope
+        {
+            GetReservationsByAgencyRequest = new GetReservationsByAgencyRequest { AgencyId = agencyId }
+        }).ConfigureAwait(false);
+
+        if (response.PayloadCase != ResponseEnvelope.PayloadOneofCase.GetReservationsByAgencyResponse)
+            throw new InvalidOperationException("Unexpected server response for GetReservations.");
+
+        return response.GetReservationsByAgencyResponse.Reservations
+            .Select(ToReservation)
+            .ToList();
+    }
+
+    public async Task<Reservation> EditReservationAsync(int id, string name, string phone, int tickets)
+    {
+        var response = await SendAndEnsureSuccessAsync(new RequestEnvelope
+        {
+            EditReservationRequest = new EditReservationRequest
+            {
+                ReservationId   = id,
+                CustomerName    = name,
+                CustomerPhone   = phone,
+                NumberOfTickets = tickets
+            }
+        }).ConfigureAwait(false);
+
+        if (response.PayloadCase != ResponseEnvelope.PayloadOneofCase.EditReservationResponse)
+            throw new InvalidOperationException("Unexpected server response for EditReservation.");
+
+        return ToReservation(response.EditReservationResponse.Reservation);
+    }
+
+    public async Task DeleteReservationAsync(int id)
+    {
+        await SendAndEnsureSuccessAsync(new RequestEnvelope
+        {
+            DeleteReservationRequest = new DeleteReservationRequest { ReservationId = id }
+        }).ConfigureAwait(false);
+    }
+
+    public async Task<Trip> CreateTripAsync(
+        string touristAttraction, string transportCompany,
+        string departureTime, double price, int availableSeats)
+    {
+        var response = await SendAndEnsureSuccessAsync(new RequestEnvelope
+        {
+            CreateTripRequest = new CreateTripRequest
+            {
+                TouristAttraction = touristAttraction,
+                TransportCompany  = transportCompany,
+                DepartureTime     = departureTime,
+                Price             = price,
+                AvailableSeats    = availableSeats
+            }
+        }).ConfigureAwait(false);
+
+        if (response.PayloadCase != ResponseEnvelope.PayloadOneofCase.CreateTripResponse)
+            throw new InvalidOperationException("Unexpected server response for CreateTrip.");
+
+        return ToTrip(response.CreateTripResponse.Trip);
+    }
+
+    public async Task<Trip> UpdateTripAsync(
+        int id, string touristAttraction, string transportCompany,
+        string departureTime, double price, int availableSeats)
+    {
+        var response = await SendAndEnsureSuccessAsync(new RequestEnvelope
+        {
+            UpdateTripRequest = new UpdateTripRequest
+            {
+                Id                = id,
+                TouristAttraction = touristAttraction,
+                TransportCompany  = transportCompany,
+                DepartureTime     = departureTime,
+                Price             = price,
+                AvailableSeats    = availableSeats
+            }
+        }).ConfigureAwait(false);
+
+        if (response.PayloadCase != ResponseEnvelope.PayloadOneofCase.UpdateTripResponse)
+            throw new InvalidOperationException("Unexpected server response for UpdateTrip.");
+
+        return ToTrip(response.UpdateTripResponse.Trip);
+    }
+
+    public async Task DeleteTripAsync(int tripId)
+    {
+        await SendAndEnsureSuccessAsync(new RequestEnvelope
+        {
+            DeleteTripRequest = new DeleteTripRequest { TripId = tripId }
+        }).ConfigureAwait(false);
+    }
+
     private static Trip ToTrip(TripDto dto) =>
         new Trip(
             dto.Id,
@@ -109,6 +204,16 @@ public sealed class TurismService : IDisposable
             dto.DepartureTime,
             dto.Price,
             dto.AvailableSeats);
+
+    private static Reservation ToReservation(ReservationDto dto) =>
+        new Reservation(
+            dto.Id,
+            dto.CustomerName,
+            dto.CustomerPhone,
+            dto.NumberOfTickets,
+            dto.TripId,
+            dto.TripAttraction,
+            dto.AgencyId);
 
     public void Dispose() => _socket.Dispose();
 }

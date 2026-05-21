@@ -192,3 +192,28 @@
 
 - Fixed `POST /trips` to prevent client-supplied IDs from conflicting with the database-assigned sequence:
   - Modified `src/main/java/rest/TripRestController.java`: refactored `createTrip()` to construct a fresh `Trip` object and copy only domain fields (`touristAttraction`, `transportCompany`, `departureTime`, `price`, `availableSeats`) from the request body; the `id` field is now always assigned by the database.
+
+14.05.2026 (part 2)
+- Added Angular 21 web client in `web-client/` with full CRUD for trips
+- Added filter params to `GET /trips` (attraction, company, minSeats, maxPrice)
+- Added SSE endpoint `GET /trips/updates` for real-time push notifications
+- Added TripChangeEvent + TripNotifier for Spring event-driven SSE broadcasting
+- Added CorsConfig allowing http://localhost:4200
+- Expanded TripSpringRepository with 4 derived query methods
+- Extended TripRestControllerTest with 9 new tests (4 repo + 4 filter + 1 SSE)
+
+15.05.2026
+- Added agency authentication: `POST /auth/login` validates username/password against `agencies` table, returns `{id, name}` or 401.
+- Added trip booking: `POST /trips/{id}/book` with `{"seats": N}` decrements available seats or returns 409 if insufficient. Publishes SSE change event on success.
+- Added Maven Angular build embedding: `mvn package` now runs `npm install` + `npm run build` in `web-client/`, then copies `dist/web-client/browser/` into Spring Boot static resources — Angular app served at `http://localhost:8080/` after `java -jar target/turism-1.0-SNAPSHOT.jar`.
+- Added LoginComponent: sign-in form using agency credentials; session persisted in localStorage.
+- Added AuthService: wraps login/logout with Angular signal for reactive template updates.
+- Updated AppComponent: shows LoginComponent until authenticated, then TripListComponent with agency name + Logout button in header.
+- Added booking UI to TripListComponent: 🎫 button per row expands inline seat selector; confirms via `POST /trips/{id}/book`.
+
+17.05.2026
+- Refactored trip editing in the Angular web client: replaced the out-of-band `TripFormComponent` panel with inline expanded-row editing (consistent with booking and reservation editing). ✏ button expands an inline row below the trip; + Add Trip button expands an add row at the top of the table. `TripFormComponent` deleted.
+- Fixed Angular NG2008 build error (stale `.angular/cache`) caused by missing template file detection.
+- Added full trip CRUD (Add / Edit / Delete) to the Avalonia desktop client via three new socket protocol messages (CreateTrip, UpdateTrip, DeleteTrip). A popup `EditTripWindow` dialog handles both add and edit modes. The server broadcasts `TripsUpdatedNotification` after each mutation so all connected clients refresh automatically.
+- Extended `ITripRepository` with `update(Trip)` and `delete(int)` methods backed by Hibernate `merge`/`remove`.
+- Added `createTrip`, `updateTrip`, `deleteTrip` to `TurismServerService` with input validation and 7 new tests (53 total, all passing).

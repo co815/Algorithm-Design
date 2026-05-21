@@ -1,6 +1,7 @@
 package server;
 
 import model.Agency;
+import model.Reservation;
 import model.Trip;
 import protocol.TurismProtos;
 
@@ -33,6 +34,28 @@ public final class ProtobufMapper {
         TurismProtos.TripsResponse.Builder builder = TurismProtos.TripsResponse.newBuilder();
         for (Trip trip : trips) {
             builder.addTrips(toTripDto(trip));
+        }
+        return builder.build();
+    }
+
+    public static TurismProtos.ReservationDto toReservationDto(Reservation r) {
+        return TurismProtos.ReservationDto.newBuilder()
+                .setId(r.getId())
+                .setCustomerName(r.getCustomerName())
+                .setCustomerPhone(r.getCustomerPhone())
+                .setNumberOfTickets(r.getNumberOfTickets())
+                .setTripId(r.getTrip().getId())
+                .setTripAttraction(r.getTrip().getTouristAttraction())
+                .setAgencyId(r.getAgency().getId())
+                .build();
+    }
+
+    public static TurismProtos.GetReservationsByAgencyResponse toReservationsResponse(
+            List<Reservation> reservations) {
+        TurismProtos.GetReservationsByAgencyResponse.Builder builder =
+                TurismProtos.GetReservationsByAgencyResponse.newBuilder();
+        for (Reservation r : reservations) {
+            builder.addReservations(toReservationDto(r));
         }
         return builder.build();
     }

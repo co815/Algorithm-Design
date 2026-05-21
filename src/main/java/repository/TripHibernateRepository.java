@@ -68,4 +68,34 @@ public class TripHibernateRepository implements ITripRepository {
             tx.commit();
         }
     }
+
+    @Override
+    public void update(Trip trip) {
+        try (Session s = sf.openSession()) {
+            Transaction tx = s.beginTransaction();
+            s.merge(trip);
+            tx.commit();
+        }
+    }
+
+    @Override
+    public void delete(int id) {
+        try (Session s = sf.openSession()) {
+            Transaction tx = s.beginTransaction();
+            Trip trip = s.get(Trip.class, id);
+            if (trip != null) {
+                s.remove(trip);
+                s.flush();
+                Number exists = (Number) s.createNativeQuery(
+                    "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='sqlite_sequence'"
+                ).getSingleResult();
+                if (exists.intValue() > 0) {
+                    s.createNativeQuery(
+                        "UPDATE sqlite_sequence SET seq = COALESCE((SELECT MAX(id) FROM trips), 0) WHERE name = 'trips'"
+                    ).executeUpdate();
+                }
+            }
+            tx.commit();
+        }
+    }
 }

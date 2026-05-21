@@ -1,0 +1,89 @@
+<div class="toolbar">
+  <h2>Excursii</h2>
+  <app-notification-badge [connected]="connected" [count]="updateCount()"></app-notification-badge>
+  <button (click)="addTrip()">+ Adaugă excursie</button>
+</div>
+
+<form [formGroup]="filterForm" class="filters">
+  <input formControlName="attraction" placeholder="Filtrează după destinație" />
+  <input formControlName="company" placeholder="Filtrează după companie" />
+  <input formControlName="minSeats" type="number" placeholder="Locuri min." min="0" />
+  <input formControlName="maxPrice" type="number" placeholder="Preț maxim" min="0" />
+</form>
+
+@if (error()) {
+  <div class="error">{{ error() }}</div>
+}
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Destinație</th>
+      <th>Companie</th>
+      <th>Plecare</th>
+      <th>Preț</th>
+      <th>Locuri</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    @if (editingTripId() === -1) {
+      <tr class="edit-row">
+        <td colspan="9">
+          <input type="text" placeholder="Destinație turistică *" [(ngModel)]="editAttraction" />
+          <input type="text" placeholder="Companie transport *" [(ngModel)]="editCompany" />
+          <input type="text" placeholder="Plecare (YYYY-MM-DD HH:mm) *" [(ngModel)]="editDeparture" />
+          <input type="number" placeholder="Preț" min="0.01" step="0.01" [(ngModel)]="editPrice" />
+          <label>Locuri: <input type="number" min="1" [(ngModel)]="editSeats" /></label>
+          <button (click)="saveTrip()">Salvează</button>
+          <button (click)="cancelEdit()">Anulează</button>
+        </td>
+      </tr>
+    }
+    @for (trip of trips(); track trip.id) {
+      <tr>
+        <td>{{ trip.id }}</td>
+        <td>{{ trip.touristAttraction }}</td>
+        <td>{{ trip.transportCompany }}</td>
+        <td>{{ trip.departureTime }}</td>
+        <td>{{ trip.price.toFixed(2) }}</td>
+        <td>{{ trip.availableSeats }}</td>
+        <td><button (click)="startBooking(trip)" title="Rezervă">🎫</button></td>
+        <td><button (click)="editTrip(trip)" title="Editează">✏</button></td>
+        <td><button (click)="deleteTrip(trip)" title="Șterge">✕</button></td>
+      </tr>
+      @if (editingTripId() === trip.id) {
+        <tr class="edit-row">
+          <td colspan="9">
+            <input type="text" placeholder="Destinație turistică" [(ngModel)]="editAttraction" />
+            <input type="text" placeholder="Companie transport" [(ngModel)]="editCompany" />
+            <input type="text" placeholder="Plecare (YYYY-MM-DD HH:mm)" [(ngModel)]="editDeparture" />
+            <input type="number" min="0.01" step="0.01" [(ngModel)]="editPrice" />
+            <label>Locuri: <input type="number" min="1" [(ngModel)]="editSeats" /></label>
+            <button (click)="saveTrip()">Salvează</button>
+            <button (click)="cancelEdit()">Anulează</button>
+          </td>
+        </tr>
+      }
+      @if (bookingTripId() === trip.id) {
+        <tr class="booking-row">
+          <td colspan="9">
+            <input type="text" placeholder="Nume client" [(ngModel)]="bookingCustomerName" />
+            <input type="text" placeholder="Telefon" [(ngModel)]="bookingCustomerPhone" />
+            <label>Locuri:
+              <input type="number" min="1" [max]="trip.availableSeats" [(ngModel)]="bookingSeats" />
+            </label>
+            <button (click)="confirmBooking()">Confirmă</button>
+            <button (click)="cancelBooking()">Anulează</button>
+          </td>
+        </tr>
+      }
+    }
+    @if (trips().length === 0) {
+      <tr><td colspan="9">Nicio excursie găsită.</td></tr>
+    }
+  </tbody>
+</table>

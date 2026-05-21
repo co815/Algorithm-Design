@@ -1,0 +1,50 @@
+<div class="toolbar">
+  <h2>Rezervări</h2>
+</div>
+
+@if (error()) {
+  <div class="error">{{ error() }}</div>
+}
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Client</th>
+      <th>Telefon</th>
+      <th>Bilete</th>
+      <th>Excursie</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (r of reservations(); track r.id) {
+      <tr>
+        <td>{{ r.id }}</td>
+        <td>{{ r.customerName }}</td>
+        <td>{{ r.customerPhone }}</td>
+        <td>{{ r.numberOfTickets }}</td>
+        <td>{{ r.tripAttraction }}</td>
+        <td><button (click)="startEdit(r)">✏</button></td>
+        <td><button (click)="deleteReservation(r)">✕</button></td>
+      </tr>
+      @if (editingId() === r.id) {
+        <tr class="edit-row">
+          <td colspan="7">
+            <input type="text" placeholder="Nume" [(ngModel)]="editName" />
+            <input type="text" placeholder="Telefon" [(ngModel)]="editPhone" />
+            <label>Bilete:
+              <input type="number" min="1" [(ngModel)]="editTickets" />
+            </label>
+            <button (click)="confirmEdit()">Salvează</button>
+            <button (click)="cancelEdit()">Anulează</button>
+          </td>
+        </tr>
+      }
+    }
+    @if (reservations().length === 0) {
+      <tr><td colspan="7">Nicio rezervare găsită.</td></tr>
+    }
+  </tbody>
+</table>

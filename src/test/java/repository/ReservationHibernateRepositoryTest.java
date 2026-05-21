@@ -85,4 +85,66 @@ class ReservationHibernateRepositoryTest {
         assertFalse(byTrip.isEmpty());
         assertTrue(byTrip.stream().allMatch(r -> r.getTrip().getId() == testTrip.getId()));
     }
+
+    @Test
+    void findByAgency_returnsOnlyThatAgency() {
+        AgencyHibernateRepository agencyRepo2 = new AgencyHibernateRepository(sf);
+        Agency other = new Agency(0, "Other Agency", "otheragency_unique", "pass");
+        agencyRepo2.save(other);
+        Agency otherSaved = agencyRepo2.findByUsername("otheragency_unique");
+
+        repo.save(new Reservation(0, "ForOther", "0100", 1, testTrip, otherSaved));
+
+        List<Reservation> result = repo.findByAgency(otherSaved.getId());
+        assertEquals(1, result.size());
+        assertEquals("ForOther", result.get(0).getCustomerName());
+    }
+
+    @Test
+    void delete_removesReservation() {
+        Reservation r = new Reservation(0, "ToDelete", "0200", 1, testTrip, testAgency);
+        repo.save(r);
+        int id = r.getId();
+
+        repo.delete(id);
+
+        assertNull(repo.findById(id));
+    }
+
+    @Test
+    void update_changesFields() {
+        Reservation r = new Reservation(0, "OldName", "0300", 1, testTrip, testAgency);
+        repo.save(r);
+
+        r.setCustomerName("NewName");
+        r.setCustomerPhone("9999");
+        r.setNumberOfTickets(3);
+        repo.update(r);
+
+        Reservation updated = repo.findById(r.getId());
+        assertEquals("NewName", updated.getCustomerName());
+        assertEquals("9999", updated.getCustomerPhone());
+        assertEquals(3, updated.getNumberOfTickets());
+    }
+
+    @Test
+    void resequenceIds_fillsGapsAndStartsFrom1() {
+        Reservation r1 = new Reservation(0, "SeqA", "0401", 1, testTrip, testAgency);
+        Reservation r2 = new Reservation(0, "SeqB", "0402", 1, testTrip, testAgency);
+        Reservation r3 = new Reservation(0, "SeqC", "0403", 1, testTrip, testAgency);
+        repo.save(r1);
+        repo.save(r2);
+        repo.save(r3);
+
+        repo.delete(r2.getId());
+
+        repo.resequenceIds();
+
+        List<Reservation> all = repo.findAll();
+        List<Integer> ids = all.stream().map(Reservation::getId).sorted().toList();
+        for (int i = 0; i < ids.size(); i++) {
+            assertEquals(i + 1, ids.get(i),
+                    "Expected sequential id " + (i + 1) + " but got " + ids.get(i));
+        }
+    }
 }

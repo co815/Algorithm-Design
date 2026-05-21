@@ -80,4 +80,25 @@ class TripHibernateRepositoryTest {
         repo.updateAvailableSeats(t.getId(), 15);
         assertEquals(15, repo.findById(t.getId()).getAvailableSeats());
     }
+
+    @Test
+    void updateChangesFields() {
+        Trip t = new Trip(0, "Lisbon", "TAP Air", "2026-07-01 10:00", 400.0, 20);
+        repo.save(t);
+        t.setTouristAttraction("Porto");
+        t.setPrice(450.0);
+        repo.update(t);
+        Trip found = repo.findById(t.getId());
+        assertEquals("Porto", found.getTouristAttraction());
+        assertEquals(450.0, found.getPrice());
+    }
+
+    @Test
+    void deleteRemovesTrip() {
+        Trip t = new Trip(0, "Athens", "Aegean", "2026-08-01 09:00", 350.0, 15);
+        repo.save(t);
+        int id = t.getId();
+        repo.delete(id);
+        assertNull(repo.findById(id));
+    }
 }
